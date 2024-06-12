@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  snake_server:
+    container_name: snake-server
+    build:
+      context: .
+      dockerfile: ./env.d/docker.d/Dockerfile
+    user: "root:root"
+    ports: ["8081:8080"]
+    depends_on:
+      - go_db
+
+  snake_db:
+    image: postgres:15-alpine
+    container_name: snake-db
+    env_file: docker.env
+    ports: ["5433:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
