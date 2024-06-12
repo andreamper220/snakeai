@@ -13,6 +13,7 @@ import (
 var Config struct {
 	Address     address
 	DatabaseDSN string
+	RedisURL    string
 }
 
 type address struct {
@@ -44,6 +45,7 @@ func ParseFlags() {
 
 	flag.Var(&addr, "a", "server address host:port")
 	flag.StringVar(&Config.DatabaseDSN, "d", "host=snake_db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", "database DSN")
+	flag.StringVar(&Config.RedisURL, "r", "redis://snake_redis:6379", "redis URL")
 
 	flag.Parse()
 
@@ -53,6 +55,9 @@ func ParseFlags() {
 	}
 	if databaseDsnEnv := os.Getenv("DATABASE_DSN"); databaseDsnEnv != "" {
 		Config.DatabaseDSN = databaseDsnEnv
+	}
+	if redisUrlEnv := os.Getenv("REDIS_URL"); redisUrlEnv != "" {
+		Config.RedisURL = redisUrlEnv
 	}
 
 	if err != nil {

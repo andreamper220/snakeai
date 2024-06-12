@@ -9,4 +9,5 @@ var Storage StorageInterface
 
 type StorageInterface interface {
 	AddUser(user *shared.User) (uuid.UUID, error)
+	GetUserByEmail(email string) (*shared.User, error)
 }

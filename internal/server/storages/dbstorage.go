@@ -4,11 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
 	"time"
 
 	"snake_ai/internal/shared"
+)
+
+var (
+	ErrDuplicateEmail = errors.New("duplicate email")
+	ErrRecordNotFound = errors.New("user not found")
 )
 
 //go:embed migrations/*.sql
@@ -41,14 +47,17 @@ func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
 	}
 
 	var userID uuid.UUID
-	queryUser := `
-    INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
-	argsUser := []any{user.Email, user.Password.Hash}
+	query := `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
+	args := []any{user.Email, user.Password.Hash}
 
-	if err := tx.QueryRowContext(ctx, queryUser, argsUser...).Scan(&userID); err != nil {
+	if err := tx.QueryRowContext(ctx, query, args...).Scan(&userID); err != nil {
+		if e := tx.Rollback(); e != nil {
+			return [16]byte{}, e
+		}
+
 		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return [16]byte{}, shared.ErrDuplicateEmail
+		case err.Error() == `ERROR: duplicate key value violates unique constraint "users_email_key" (SQLSTATE 23505)`:
+			return [16]byte{}, ErrDuplicateEmail
 		default:
 			return [16]byte{}, err
 		}
@@ -58,4 +67,28 @@ func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
 	}
 
 	return userID, nil
+}
+
+func (dbs *DBStorage) GetUserByEmail(email string) (*shared.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var user shared.User
+	query := `SELECT u.* FROM users u WHERE u.email = $1`
+	args := []any{email}
+
+	if err := dbs.Connection.QueryRowContext(ctx, query, args...).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password.Hash,
+	); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }

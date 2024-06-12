@@ -18,5 +18,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  snake_redis:
+    image: "redis:alpine"
+    container_name: snake-redis
+
 volumes:
   postgres_data:
