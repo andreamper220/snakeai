@@ -3,12 +3,21 @@ package server
 import (
 	"database/sql"
 	"errors"
+	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"net/http"
 
+	"snake_ai/internal/handlers"
 	"snake_ai/internal/logger"
 	"snake_ai/internal/server/storages"
 )
+
+func MakeRouter() *chi.Mux {
+	r := chi.NewRouter()
+	r.Post(`/register`, handlers.UserRegister)
+
+	return r
+}
 
 func MakeStorage() error {
 	if Config.DatabaseDSN == "" {
@@ -40,10 +49,6 @@ func Run() error {
 	}
 	defer storage.Connection.Close()
 
-	//http.HandleFunc(`/`, func(w http.ResponseWriter, r *http.Request) {
-	//	handlers.Handle(w, r, Config.DestServerAddress.String())
-	//})
-
 	logger.Log.Infof("server listening on %s", Config.Address.String())
-	return http.ListenAndServe(Config.Address.String(), nil)
+	return http.ListenAndServe(Config.Address.String(), MakeRouter())
 }
