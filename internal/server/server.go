@@ -7,9 +7,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
 	"net/http"
-	"snake_ai/internal/server/clients"
 
 	"snake_ai/internal/logger"
+	"snake_ai/internal/server/clients"
 	"snake_ai/internal/server/handlers"
 	"snake_ai/internal/server/storages"
 )
@@ -17,8 +17,12 @@ import (
 func MakeRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Post(`/register`, handlers.UserRegister)
-	r.Post(`/login`, handlers.UserLogin)
-	r.Post(`/logout`, handlers.UserLogout)
+	r.Post(`/login`, func(w http.ResponseWriter, r *http.Request) {
+		handlers.UserLogin(w, r, []byte(Config.SessionSecret), Config.SessionExpires)
+	})
+	r.Post(`/logout`, func(w http.ResponseWriter, r *http.Request) {
+		handlers.UserLogout(w, r, []byte(Config.SessionSecret))
+	})
 
 	return r
 }

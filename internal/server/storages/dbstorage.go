@@ -74,7 +74,7 @@ func (dbs *DBStorage) GetUserByEmail(email string) (*shared.User, error) {
 	defer cancel()
 
 	var user shared.User
-	query := `SELECT u.* FROM users u WHERE u.email = $1`
+	query := `SELECT u.id, u.email, u.password FROM users u WHERE u.email = $1`
 	args := []any{email}
 
 	if err := dbs.Connection.QueryRowContext(ctx, query, args...).Scan(

@@ -6,14 +6,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"snake_ai/internal/logger"
 )
 
 var Config struct {
-	Address     address
-	DatabaseDSN string
-	RedisURL    string
+	Address        address
+	DatabaseDSN    string
+	RedisURL       string
+	SessionSecret  string
+	SessionExpires time.Duration
 }
 
 type address struct {
@@ -42,11 +45,13 @@ func ParseFlags() {
 		host: "0.0.0.0",
 		port: 8080,
 	}
+	var sessExpSec int
 
 	flag.Var(&addr, "a", "server address host:port")
 	flag.StringVar(&Config.DatabaseDSN, "d", "host=snake_db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", "database DSN")
 	flag.StringVar(&Config.RedisURL, "r", "redis://snake_redis:6379", "redis URL")
-
+	flag.StringVar(&Config.SessionSecret, "s", "1234567887654321", "secret to session id encrypt")
+	flag.IntVar(&sessExpSec, "e", 1800, "session expiration seconds")
 	flag.Parse()
 
 	var err error
@@ -59,10 +64,17 @@ func ParseFlags() {
 	if redisUrlEnv := os.Getenv("REDIS_URL"); redisUrlEnv != "" {
 		Config.RedisURL = redisUrlEnv
 	}
+	if sessionSecretEnv := os.Getenv("SESSION_SECRET"); sessionSecretEnv != "" {
+		Config.SessionSecret = sessionSecretEnv
+	}
+	if sessionExpiresEnv := os.Getenv("SESSION_EXPIRATION"); sessionExpiresEnv != "" {
+		sessExpSec, err = strconv.Atoi(sessionExpiresEnv)
+	}
 
 	if err != nil {
 		logger.Log.Fatal(err.Error())
 	}
 
 	Config.Address = addr
+	Config.SessionExpires = time.Duration(sessExpSec) * time.Second
 }
