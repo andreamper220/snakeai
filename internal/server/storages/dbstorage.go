@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
+	"snake_ai/internal/shared/match/data"
 	"time"
 
 	"snake_ai/internal/shared/user"
@@ -115,4 +116,28 @@ func (dbs *DBStorage) IsUserExisted(id uuid.UUID) (bool, error) {
 		return false, err
 	}
 	return exists, nil
+}
+
+func (dbs *DBStorage) GetPlayerById(id uuid.UUID) (*data.Player, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	p := data.NewPlayer()
+	query := `SELECT p.* FROM players p WHERE p.user_id = $1`
+	args := []any{id}
+
+	if err := dbs.Connection.QueryRowContext(ctx, query, args...).Scan(
+		&p.Id,
+		&p.Name,
+		&p.Skill,
+	); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &p, nil
 }

@@ -7,23 +7,26 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
 	"net/http"
-	"snake_ai/internal/server/middlewares"
-
 	"snake_ai/internal/logger"
 	"snake_ai/internal/server/clients"
-	"snake_ai/internal/server/handlers"
+	"snake_ai/internal/server/handlers/post_handlers"
+	"snake_ai/internal/server/middlewares"
+	"snake_ai/internal/server/routines"
 	"snake_ai/internal/server/storages"
+	"snake_ai/internal/shared/match/data"
 )
 
 func MakeRouter() *chi.Mux {
 	r := chi.NewRouter()
 	// w/o auth
-	r.Post(`/register`, handlers.UserRegister)
+	r.Post(`/register`, post_handlers.UserRegister)
 	r.Post(`/login`, func(w http.ResponseWriter, r *http.Request) {
-		handlers.UserLogin(w, r, []byte(Config.SessionSecret), Config.SessionExpires)
+		post_handlers.UserLogin(w, r, []byte(Config.SessionSecret), Config.SessionExpires)
 	})
 	// w/ auth
-	r.Post(`/logout`, middlewares.WithAuthenticate(handlers.UserLogout, []byte(Config.SessionSecret)))
+	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
+	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
+	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
 
 	return r
 }
@@ -74,6 +77,16 @@ func Run() error {
 		return err
 	}
 	logger.Log.Info("redis connection established")
+
+	numWorkers := 4
+	parties := make([]*data.Party, 0)
+	for w := 0; w < numWorkers; w++ {
+		go routines.MatchWorker(&parties)
+	}
+	logger.Log.Infof("%d go match workers started", numWorkers)
+
+	go routines.HandlePartyMessages()
+	logger.Log.Info("party messages goroutine started")
 
 	logger.Log.Infof("server listening on %s", Config.Address.String())
 	return http.ListenAndServe(Config.Address.String(), MakeRouter())

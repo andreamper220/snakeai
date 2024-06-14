@@ -1,4 +1,4 @@
-package handlers
+package post_handlers
 
 import (
 	"bytes"
@@ -151,8 +151,4 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	}
 
 	logger.Log.Infof("user with ID %s logged out", userId.String())
-}
-
-func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
-
 }
