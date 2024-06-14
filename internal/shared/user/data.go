@@ -1,4 +1,4 @@
-package shared
+package user
 
 import (
 	"github.com/google/uuid"

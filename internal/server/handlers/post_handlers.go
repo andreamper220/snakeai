@@ -9,34 +9,33 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
-	"strings"
 	"time"
 
 	"snake_ai/internal/logger"
 	"snake_ai/internal/server/clients"
 	"snake_ai/internal/server/cookies"
 	"snake_ai/internal/server/storages"
-	"snake_ai/internal/shared"
+	"snake_ai/internal/shared/user"
 	"snake_ai/internal/validator"
 )
 
 func UserRegister(w http.ResponseWriter, r *http.Request) {
-	var userJson shared.UserJson
+	var userJson user.UserJson
 	if err := json.NewDecoder(r.Body).Decode(&userJson); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user := &shared.User{
+	u := &user.User{
 		Email: userJson.Email,
 	}
-	if err := user.Password.Set(userJson.Password); err != nil {
+	if err := u.Password.Set(userJson.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	v := validator.New()
-	validator.ValidateUser(v, user)
+	validator.ValidateUser(v, u)
 	if !v.IsValid() {
 		http.Error(w, v.String(), http.StatusBadRequest)
 		return
@@ -44,7 +43,7 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 
 	// TODO add email sending OTP to set is_active=true
 
-	userId, err := storages.Storage.AddUser(user)
+	userId, err := storages.Storage.AddUser(u)
 	if err != nil {
 		switch {
 		case errors.Is(err, storages.ErrDuplicateEmail):
@@ -55,23 +54,23 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	user.Id = userId
+	u.Id = userId
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	if err = json.NewEncoder(w).Encode(user); err != nil {
+	if err = json.NewEncoder(w).Encode(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired time.Duration) {
-	var userJson shared.UserJson
+	var userJson user.UserJson
 	if err := json.NewDecoder(r.Body).Decode(&userJson); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	user, err := storages.Storage.GetUserByEmail(userJson.Email)
+	u, err := storages.Storage.GetUserByEmail(userJson.Email)
 	if err != nil {
 		switch {
 		case errors.Is(err, storages.ErrRecordNotFound):
@@ -82,21 +81,21 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 		return
 	}
 
-	passwordMatch, err := user.Password.Check(userJson.Password)
+	passwordMatch, err := u.Password.Check(userJson.Password)
 	if !passwordMatch {
 		http.Error(w, "password does not match", http.StatusUnauthorized)
 		return
 	}
 
 	var buf bytes.Buffer
-	err = gob.NewEncoder(&buf).Encode(&user.Id)
+	err = gob.NewEncoder(&buf).Encode(&u.Id)
 	if err != nil {
 		http.Error(w, "something happened encoding your data", http.StatusInternalServerError)
 		return
 	}
 	session := buf.String()
 
-	clients.RedisClient.Set(context.Background(), "sessionID_"+session, user.Id.String(), expired)
+	clients.RedisClient.Set(context.Background(), "sessionID_"+session, u.Id.String(), expired)
 	cookie := http.Cookie{
 		Name:     "sessionID",
 		Value:    session,
@@ -114,37 +113,23 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(user); err != nil {
+	if err := json.NewEncoder(w).Encode(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	logger.Log.Infof("user with ID %s logged in", user.Id)
+	logger.Log.Infof("user with ID %s logged in", u.Id)
 }
 
-func UserLogout(w http.ResponseWriter, r *http.Request, secret []byte) {
-	gobEncodedValue, err := cookies.ReadEncrypted(r, "sessionID", secret)
-
+func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(&userId)
 	if err != nil {
-		switch {
-		case errors.Is(err, http.ErrNoCookie):
-			http.Error(w, "you are not authorized to access this resource", http.StatusUnauthorized)
-		case errors.Is(err, cookies.ErrInvalidValue):
-			http.Error(w, "invalid cookie", http.StatusBadRequest)
-		default:
-			http.Error(w, "something happened getting your cookie data", http.StatusInternalServerError)
-		}
+		http.Error(w, "something happened checking your user id", http.StatusInternalServerError)
 		return
 	}
 
-	var userID uuid.UUID
-	reader := strings.NewReader(gobEncodedValue)
-	if err := gob.NewDecoder(reader).Decode(&userID); err != nil {
-		http.Error(w, "something happened decoding your cookie data", http.StatusInternalServerError)
-		return
-	}
-
-	if _, err = clients.RedisClient.Del(context.Background(), "sessionID_"+userID.String()).Result(); err != nil {
+	if _, err = clients.RedisClient.Del(context.Background(), "sessionID_"+buf.String()).Result(); err != nil {
 		switch {
 		case errors.Is(err, redis.Nil):
 			http.Error(w, "you are not authorized to access this resource", http.StatusUnauthorized)
@@ -165,5 +150,9 @@ func UserLogout(w http.ResponseWriter, r *http.Request, secret []byte) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	logger.Log.Infof("user with ID %s logged out", userID.String())
+	logger.Log.Infof("user with ID %s logged out", userId.String())
+}
+
+func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+
 }

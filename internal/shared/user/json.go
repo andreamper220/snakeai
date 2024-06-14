@@ -1,4 +1,4 @@
-package shared
+package user
 
 type UserJson struct {
 	Email    string `json:"email"`

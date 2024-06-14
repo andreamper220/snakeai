@@ -9,7 +9,7 @@ import (
 	"github.com/pressly/goose/v3"
 	"time"
 
-	"snake_ai/internal/shared"
+	"snake_ai/internal/shared/user"
 )
 
 var (
@@ -37,7 +37,7 @@ func NewDBStorage(conn *sql.DB) (*DBStorage, error) {
 		Connection: conn,
 	}, nil
 }
-func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
+func (dbs *DBStorage) AddUser(user *user.User) (uuid.UUID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -47,10 +47,9 @@ func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
 	}
 
 	var userID uuid.UUID
-	query := `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
-	args := []any{user.Email, user.Password.Hash}
-
-	if err := tx.QueryRowContext(ctx, query, args...).Scan(&userID); err != nil {
+	queryUser := `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
+	argsUser := []any{user.Email, user.Password.Hash}
+	if err := tx.QueryRowContext(ctx, queryUser, argsUser...).Scan(&userID); err != nil {
 		if e := tx.Rollback(); e != nil {
 			return [16]byte{}, e
 		}
@@ -62,6 +61,17 @@ func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
 			return [16]byte{}, err
 		}
 	}
+
+	queryPlayer := `INSERT INTO players (user_id, name, skill) VALUES ($1, $2, $3)`
+	argsPlayer := []any{userID, user.Email, 0}
+	if _, err = tx.ExecContext(ctx, queryPlayer, argsPlayer...); err != nil {
+		if e := tx.Rollback(); e != nil {
+			return [16]byte{}, e
+		}
+
+		return [16]byte{}, err
+	}
+
 	if err = tx.Commit(); err != nil {
 		return [16]byte{}, err
 	}
@@ -69,18 +79,18 @@ func (dbs *DBStorage) AddUser(user *shared.User) (uuid.UUID, error) {
 	return userID, nil
 }
 
-func (dbs *DBStorage) GetUserByEmail(email string) (*shared.User, error) {
+func (dbs *DBStorage) GetUserByEmail(email string) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var user shared.User
+	var u user.User
 	query := `SELECT u.id, u.email, u.password FROM users u WHERE u.email = $1`
 	args := []any{email}
 
 	if err := dbs.Connection.QueryRowContext(ctx, query, args...).Scan(
-		&user.Id,
-		&user.Email,
-		&user.Password.Hash,
+		&u.Id,
+		&u.Email,
+		&u.Password.Hash,
 	); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -90,5 +100,19 @@ func (dbs *DBStorage) GetUserByEmail(email string) (*shared.User, error) {
 		}
 	}
 
-	return &user, nil
+	return &u, nil
+}
+
+func (dbs *DBStorage) IsUserExisted(id uuid.UUID) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var exists bool
+	query := `SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)`
+	args := []any{id.String()}
+
+	if err := dbs.Connection.QueryRowContext(ctx, query, args...).Scan(&exists); err != nil {
+		return false, err
+	}
+	return exists, nil
 }
