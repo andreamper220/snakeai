@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Match Making</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .topnav {
+            overflow: hidden;
+            background-color: #e9e9e9;
+        }
+
+        .topnav a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .topnav a.active {
+            background-color: #006653;
+            color: white;
+        }
+
+        .topnav .logout-container {
+            padding: 0 15px;
+            font-size: 17px;
+            outline: none;
+        }
+
+        .topnav .logout-container button {
+            float: right;
+            color: #fff;
+            background: #009579;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.4s;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            height: 55px;
+            width: 10%;
+            padding: 14px 16px;
+        }
+
+        .topnav .logout-container button:hover {
+            background: #006653;
+        }
+
+        .alert{
+            display: flex;
+            justify-content: flex-end;
+            font-size: 15px;
+            color: #ff1d1d;
+        }
+    </style>
+</head>
+<body>
+<div class="topnav">
+    <a class="active" href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <div class="logout-container">
+        <button id="logout_button" type="button">Logout</button>
+    </div>
+</div>
+<div id="logout_alert" class="alert"></div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+    function getFormData($form){
+        var unindexed_array = $form.serializeArray();
+        var indexed_array = {};
+
+        $.map(unindexed_array, function(n, i){
+            indexed_array[n['name']] = n['value'];
+        });
+
+        return indexed_array;
+    }
+
+    $(document).ready(function(){
+        $("#logout_button").on('click', function(){
+            $.ajax({
+                url: '/logout',
+                type : "POST",
+                success : function() {
+                    $("#logout_alert").html("");
+                    location.href = "/";
+                },
+                error: function(xhr) {
+                    $("#logout_alert").html(xhr.responseText);
+                }
+            })
+        });
+    });
+</script>
+</html>

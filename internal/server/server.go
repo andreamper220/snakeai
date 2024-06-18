@@ -10,6 +10,7 @@ import (
 
 	"snake_ai/internal/logger"
 	"snake_ai/internal/server/clients"
+	"snake_ai/internal/server/handlers/get_handlers"
 	"snake_ai/internal/server/handlers/post_handlers"
 	"snake_ai/internal/server/handlers/ws_handlers"
 	"snake_ai/internal/server/middlewares"
@@ -21,11 +22,13 @@ import (
 func MakeRouter() *chi.Mux {
 	r := chi.NewRouter()
 	// w/o auth
+	r.Get(`/`, get_handlers.UserAuth)
 	r.Post(`/register`, post_handlers.UserRegister)
 	r.Post(`/login`, func(w http.ResponseWriter, r *http.Request) {
 		post_handlers.UserLogin(w, r, []byte(Config.SessionSecret), Config.SessionExpires)
 	})
 	// w/ auth
+	r.Get(`/match`, middlewares.WithAuthenticate(get_handlers.PlayerMatch, []byte(Config.SessionSecret)))
 	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
