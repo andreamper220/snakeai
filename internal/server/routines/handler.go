@@ -1,8 +1,11 @@
 package routines
 
 import (
+	"github.com/gorilla/websocket"
+
 	"snake_ai/internal/logger"
 	"snake_ai/internal/shared/match/data"
+	"snake_ai/internal/shared/ws"
 )
 
 var PartiesChannel = make(chan *data.Party, 100)
@@ -10,19 +13,17 @@ var PartiesChannel = make(chan *data.Party, 100)
 func HandlePartyMessages() {
 	for {
 		pa := <-PartiesChannel
-		logger.Log.Infof("found party: %v", pa)
-		//for _, player := range pa.Players {
-		//	playerName := player.name
-		//	conn := server.connectionsMap[playerName]
-		//	if conn != nil {
-		//		msg := fmt.Sprintf("found party : %v", pa)
-		//		err := conn.WriteJSON(msg)
-		//		if err != nil {
-		//			fmt.Println(err)
-		//			conn.Close()
-		//			delete(server.connectionsMap, playerName)
-		//		}
-		//	}
-		//}
+		for _, p := range pa.Players {
+			conn := ws.Connections[p.Id]
+			if conn != nil {
+				logger.Log.Infof("found party: %v", pa)
+				err := conn.WriteMessage(websocket.TextMessage, []byte("found party"))
+				if err != nil {
+					conn.Close()
+					delete(ws.Connections, p.Id)
+					logger.Log.Errorf("error writing to websocket: %s", err.Error())
+				}
+			}
+		}
 	}
 }

@@ -7,9 +7,11 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
 	"net/http"
+
 	"snake_ai/internal/logger"
 	"snake_ai/internal/server/clients"
 	"snake_ai/internal/server/handlers/post_handlers"
+	"snake_ai/internal/server/handlers/ws_handlers"
 	"snake_ai/internal/server/middlewares"
 	"snake_ai/internal/server/routines"
 	"snake_ai/internal/server/storages"
@@ -27,6 +29,9 @@ func MakeRouter() *chi.Mux {
 	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
+	r.Post(`/ws`, middlewares.WithAuthenticate(ws_handlers.PlayerConnection, []byte(Config.SessionSecret)))
+
+	logger.Log.Infof("server listening on %s", Config.Address.String())
 
 	return r
 }
@@ -88,6 +93,5 @@ func Run() error {
 	go routines.HandlePartyMessages()
 	logger.Log.Info("party messages goroutine started")
 
-	logger.Log.Infof("server listening on %s", Config.Address.String())
 	return http.ListenAndServe(Config.Address.String(), MakeRouter())
 }
