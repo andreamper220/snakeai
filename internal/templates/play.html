@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Match Making</title>
+    <title>Play Game</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
         * {
@@ -132,17 +132,33 @@
         .connect label:hover{
             text-decoration: underline;
         }
-        .form_container .conn{
+        .form_container .mm{
             display: none;
         }
         #check:checked ~ .conn{
-            display: block;
+            display: none;
         }
         #check:checked ~ .mm{
-            display: none;
+            display: block;
         }
         #check{
             display: none;
+        }
+        .loader {
+            position: relative;
+            left: calc(50% - 30px);
+            top: 50%;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #006653;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .game{
             display: none;
@@ -162,25 +178,31 @@
 <div class="form_container">
     <input type="checkbox" id="check">
     <div class="mm form">
-        <header>Match Making</header>
-        <p>Please enter party size (1-100 players):</p>
-        <form id="mm_form">
-            <input type="number" name="size" placeholder="1" min="1" max="100">
-            <input id="mm_button" type="button" class="button" value="Create party">
-        </form>
-        <div class="connect">
-            <span class="connect">
-                <label for="check">Connect to existing party</label>
-            </span>
+        <header id="mm_form_header">Match Making</header>
+        <div class="loader"></div>
+        <div id="mm_form_container">
+            <p>Please enter party size (1-100 players):</p>
+            <form id="mm_form">
+                <input type="number" name="size" placeholder="1" min="1" max="100">
+                <input id="mm_button" type="button" class="button" value="Create party">
+            </form>
+            <div class="connect">
+                <span class="connect">
+                    <label for="check">Connect to existing party</label>
+                </span>
+            </div>
         </div>
     </div>
     <div class="conn form">
-        <header>Connect to party</header>
-        <input id="connect_button" type="button" class="button" value="Connect">
-        <div class="connect">
-            <span class="connect">
-                <label for="check">Create your own party</label>
-            </span>
+        <header id="conn_form_header">Connect to party</header>
+        <div class="loader"></div>
+        <div id="conn_form_container">
+            <input id="connect_button" type="button" class="button" value="Connect">
+            <div class="connect">
+                <span class="connect">
+                    <label for="check">Create your own party</label>
+                </span>
+            </div>
         </div>
     </div>
 </div>
@@ -242,12 +264,16 @@
                 contentType: "application/json; charset=utf-8",
                 data : getFormJsonData($("#mm_form"))
             })
+            $('#mm_form_container').fadeOut();
+            $('.loader').show();
         });
         $("#connect_button").on('click', function(){
             $.ajax({
                 url: '/player',
                 type : "POST"
             })
+            $('#conn_form_container').fadeOut();
+            $('.loader').show();
         });
 
         $("#logout_button").on('click', function(){

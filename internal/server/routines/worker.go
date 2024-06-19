@@ -73,9 +73,11 @@ func addDelayToReenqueuePlayer(p *data.Player, playerJobsChannel chan *data.Play
 		<-timer.C
 		p.Lock()
 		if !p.InParty {
-			p.Party.RemovePlayer(p)
+			if p.Party != nil {
+				p.Party.RemovePlayer(p)
+				p.Party = nil
+			}
 			p.SkillDelta = p.SkillDelta * 2
-			p.Party = nil
 			p.InParty = false
 			p.InProcess = false
 			p.Unlock()
