@@ -7,10 +7,10 @@ import (
 
 type Party struct {
 	mux      sync.Mutex
-	Id       string
-	Players  []*Player
-	AvgSkill int
-	Size     int
+	Id       string    `json:"id"`
+	Players  []*Player `json:"players"`
+	AvgSkill int       `json:"avg_skill"`
+	Size     int       `json:"size"`
 }
 
 func NewParty() Party {

@@ -8,13 +8,13 @@ import (
 
 type Player struct {
 	mux        sync.Mutex
-	Id         uuid.UUID
-	Name       string
-	Skill      int
-	SkillDelta int
-	Party      *Party
-	InParty    bool
-	InProcess  bool
+	Id         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	Skill      int       `json:"skill"`
+	SkillDelta int       `json:"-"`
+	Party      *Party    `json:"-"`
+	InParty    bool      `json:"-"`
+	InProcess  bool      `json:"-"`
 }
 
 func NewPlayer() Player {

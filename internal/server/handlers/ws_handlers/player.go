@@ -19,19 +19,9 @@ func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) 
 		return
 	}
 
-	defer c.Close()
-	for {
-		conn, exists := ws.Connections[userId]
-		if !exists {
-			ws.Connections[userId] = c
-			conn = c
-			logger.Log.Infof("ws connection added to player with ID = %s", userId.String())
-		}
-		//w, err := c.conn.NextWriter(websocket.TextMessage)
-		//if err != nil {
-		//	return
-		//}
-		//w.Write(message)
-		conn.WriteMessage(websocket.TextMessage, []byte("connection established"))
+	_, exists := ws.Connections.Get(userId)
+	if !exists {
+		ws.Connections.Add(userId, c)
+		logger.Log.Infof("ws connection added to player with ID = %s", userId.String())
 	}
 }

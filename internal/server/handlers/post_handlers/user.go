@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
+	"snake_ai/internal/shared/ws"
 	"time"
 
 	"snake_ai/internal/logger"
@@ -112,6 +113,8 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 		return
 	}
 
+	ws.Connections.Remove(u.Id)
+
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(u); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -144,6 +147,8 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 		Value:   "",
 		Expires: time.Now(),
 	})
+
+	ws.Connections.Remove(userId)
 
 	_, err = w.Write([]byte("You are logged out"))
 	if err != nil {

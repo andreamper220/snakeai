@@ -32,7 +32,7 @@ func MakeRouter() *chi.Mux {
 	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
-	r.Post(`/ws`, middlewares.WithAuthenticate(ws_handlers.PlayerConnection, []byte(Config.SessionSecret)))
+	r.Get(`/ws`, middlewares.WithAuthenticate(ws_handlers.PlayerConnection, []byte(Config.SessionSecret)))
 
 	logger.Log.Infof("server listening on %s", Config.Address.String())
 
