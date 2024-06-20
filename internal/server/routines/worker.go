@@ -1,10 +1,10 @@
-package routines
+package match_routines
 
 import (
-	"snake_ai/internal/shared/match/data"
 	"time"
 
 	"snake_ai/internal/logger"
+	"snake_ai/internal/shared/match/data"
 )
 
 var PlayerJobsChannel = make(chan *data.Player, 100)

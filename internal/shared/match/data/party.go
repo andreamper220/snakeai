@@ -1,8 +1,9 @@
 package data
 
 import (
-	"math/rand"
 	"sync"
+
+	"snake_ai/internal/shared"
 )
 
 type Party struct {
@@ -14,13 +15,11 @@ type Party struct {
 }
 
 func NewParty() Party {
-	return Party{Id: randSeq(10), Players: []*Player{}, AvgSkill: 0}
+	return Party{Id: shared.RandSeq(10), Players: []*Player{}, AvgSkill: 0}
 }
-
 func (party *Party) lock() {
 	party.mux.Lock()
 }
-
 func (party *Party) unlock() {
 	party.mux.Unlock()
 }
@@ -61,13 +60,4 @@ func (party *Party) computeAvgSkill() {
 		sum += p.Skill
 	}
 	party.AvgSkill = sum / len(party.Players)
-}
-
-func randSeq(n int) string {
-	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }

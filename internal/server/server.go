@@ -9,12 +9,14 @@ import (
 	"net/http"
 
 	"snake_ai/internal/logger"
+	game "snake_ai/internal/server/ai/data"
+	gameroutines "snake_ai/internal/server/ai/routines"
 	"snake_ai/internal/server/clients"
 	"snake_ai/internal/server/handlers/get_handlers"
 	"snake_ai/internal/server/handlers/post_handlers"
 	"snake_ai/internal/server/handlers/ws_handlers"
 	"snake_ai/internal/server/middlewares"
-	"snake_ai/internal/server/routines"
+	matchroutines "snake_ai/internal/server/routines"
 	"snake_ai/internal/server/storages"
 	"snake_ai/internal/shared/match/data"
 )
@@ -32,6 +34,7 @@ func MakeRouter() *chi.Mux {
 	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
+	r.Post(`/player/ai`, middlewares.WithAuthenticate(post_handlers.PlayerRunAi, []byte(Config.SessionSecret)))
 	r.Get(`/ws`, middlewares.WithAuthenticate(ws_handlers.PlayerConnection, []byte(Config.SessionSecret)))
 
 	logger.Log.Infof("server listening on %s", Config.Address.String())
@@ -86,14 +89,21 @@ func Run() error {
 	}
 	logger.Log.Info("redis connection established")
 
-	numWorkers := 4
+	numMatchWorkers := 4
 	parties := make([]*data.Party, 0)
-	for w := 0; w < numWorkers; w++ {
-		go routines.MatchWorker(&parties)
+	for w := 0; w < numMatchWorkers; w++ {
+		go matchroutines.MatchWorker(&parties)
 	}
-	logger.Log.Infof("%d go match workers started", numWorkers)
+	logger.Log.Infof("%d go match workers started", numMatchWorkers)
 
-	go routines.HandlePartyMessages()
+	numGameWorkers := 8
+	game.Games = make([]*game.Game, 0)
+	for w := 0; w < numGameWorkers; w++ {
+		go gameroutines.GameWorker()
+	}
+	logger.Log.Infof("%d go game workers started", numGameWorkers)
+
+	go matchroutines.HandlePartyMessages()
 	logger.Log.Info("party messages goroutine started")
 
 	return http.ListenAndServe(Config.Address.String(), MakeRouter())

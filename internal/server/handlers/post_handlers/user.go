@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
+	game "snake_ai/internal/server/ai/data"
 	"snake_ai/internal/shared/ws"
 	"time"
 
@@ -149,6 +150,16 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	})
 
 	ws.Connections.Remove(userId)
+out:
+	for _, g := range game.Games {
+		for _, p := range g.Party.Players {
+			if p.Id == userId {
+				delete(g.Snakes, userId)
+				g.Party.RemovePlayer(p)
+				break out
+			}
+		}
+	}
 
 	_, err = w.Write([]byte("You are logged out"))
 	if err != nil {

@@ -163,6 +163,9 @@
         .game{
             display: none;
         }
+        #canvas {
+            background: #fff;
+        }
     </style>
 </head>
 <body>
@@ -181,9 +184,8 @@
         <header id="mm_form_header">Match Making</header>
         <div class="loader"></div>
         <div id="mm_form_container">
-            <p>Please enter party size (1-100 players):</p>
             <form id="mm_form">
-                <input type="number" name="size" placeholder="1" min="1" max="100">
+                <input type="number" name="size" placeholder="Enter party size (1-10 players)" min="1" max="10">
                 <input id="mm_button" type="button" class="button" value="Create party">
             </form>
             <div class="connect">
@@ -208,6 +210,10 @@
 </div>
 <div class="game">
     <div class="players"></div>
+    <div class="game_fields">
+        <input id="add_snake_button" type="button" class="button" value="Add your snake [TEST]">
+    </div>
+    <canvas width="1000" height="1000" id="game_area"></canvas>
 </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -235,10 +241,15 @@
         return true;
     }
 
+    let canvas = document.getElementById('game_area'),
+        context = canvas.getContext('2d'),
+        boxSize = 40;
+
     var socket = new WebSocket("ws://" + location.host + "/ws");
     socket.onmessage = function(event) {
         if (isJson(event.data)) {
             let obj = JSON.parse(event.data);
+            // TODO update players info with scores and status
             // it's party created - let's play game!
             if (Object.hasOwn(obj, 'id')) {
                 $('.form_container').fadeOut();
@@ -249,8 +260,34 @@
                 })
                 $('.players').html(playersHtml)
             }
+            // it's field update
+            if (Object.hasOwn(obj, 'width') && Object.hasOwn(obj, 'height')) {
+                context.fillStyle = "white";
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                let p = 10;
+                for (let x = 0; x <= obj.width * boxSize; x += boxSize) {
+                    context.moveTo(0.5 + x + p, p);
+                    context.lineTo(0.5 + x + p, obj.height * boxSize + p);
+                }
+
+                for (let x = 0; x <= obj.height * boxSize; x += boxSize) {
+                    context.moveTo(p, 0.5 + x + p);
+                    context.lineTo(obj.width * boxSize + p, 0.5 + x + p);
+                }
+                context.strokeStyle = "black";
+                context.stroke();
+
+                for (const [key, snake] of Object.entries(obj.snakes)) {
+                    snake.body.forEach(function (points) {
+                        context.fillStyle = "green";
+                        context.fillRect(points.x * boxSize + p, points.y * boxSize + p, boxSize, boxSize);
+                    })
+                }
+                context.fillStyle = "red";
+                context.fillRect(obj.food.position.x * boxSize + p, obj.food.position.y * boxSize + p, boxSize, boxSize);
+            }
         }
-        console.log(event.data);
     };
     socket.onerror = function() {
         console.log("ws conn with error");
@@ -274,6 +311,13 @@
             })
             $('#conn_form_container').fadeOut();
             $('.loader').show();
+        });
+
+        $("#add_snake_button").on('click', function(){
+            $.ajax({
+                url: '/player/ai',
+                type : "POST"
+            })
         });
 
         $("#logout_button").on('click', function(){

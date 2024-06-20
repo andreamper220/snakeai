@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
+	game "snake_ai/internal/server/ai/data"
 
 	"snake_ai/internal/server/routines"
 	"snake_ai/internal/server/storages"
@@ -34,7 +35,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 	}
 
 	pa.AddPlayer(p)
-	routines.PlayerJobsChannel <- p
+	match_routines.PlayerJobsChannel <- p
 }
 
 func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
@@ -49,5 +50,29 @@ func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 		return
 	}
 
-	routines.PlayerJobsChannel <- p
+	match_routines.PlayerJobsChannel <- p
+}
+
+func PlayerRunAi(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+	// TODO handle user snakes
+	snake := game.NewSnake(5, 5, 1, 0, []func(snake *game.Snake){
+		func(snake *game.Snake) { snake.Move() },
+		func(snake *game.Snake) { snake.Up() },
+		func(snake *game.Snake) { snake.Move() },
+		func(snake *game.Snake) { snake.Left() },
+		func(snake *game.Snake) { snake.Move() },
+		func(snake *game.Snake) { snake.Down() },
+		func(snake *game.Snake) { snake.Move() },
+		func(snake *game.Snake) { snake.Right() },
+	})
+	// TODO refactor inner cycles for optimization
+out:
+	for _, g := range game.Games {
+		for _, p := range g.Party.Players {
+			if p.Id == userId {
+				g.Snakes[userId] = snake
+				break out
+			}
+		}
+	}
 }
