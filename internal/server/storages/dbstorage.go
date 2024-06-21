@@ -79,7 +79,6 @@ func (dbs *DBStorage) AddUser(user *user.User) (uuid.UUID, error) {
 
 	return userID, nil
 }
-
 func (dbs *DBStorage) GetUserByEmail(email string) (*user.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -103,7 +102,6 @@ func (dbs *DBStorage) GetUserByEmail(email string) (*user.User, error) {
 
 	return &u, nil
 }
-
 func (dbs *DBStorage) IsUserExisted(id uuid.UUID) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -117,7 +115,6 @@ func (dbs *DBStorage) IsUserExisted(id uuid.UUID) (bool, error) {
 	}
 	return exists, nil
 }
-
 func (dbs *DBStorage) GetPlayerById(id uuid.UUID) (*data.Player, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -140,4 +137,15 @@ func (dbs *DBStorage) GetPlayerById(id uuid.UUID) (*data.Player, error) {
 	}
 
 	return &p, nil
+}
+func (dbs *DBStorage) IncreasePlayerScore(id uuid.UUID) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `UPDATE players SET skill = skill + 1 WHERE user_id = $1`
+	args := []any{id}
+	if _, err := dbs.Connection.ExecContext(ctx, query, args...); err != nil {
+		return err
+	}
+	return nil
 }

@@ -14,4 +14,5 @@ type StorageInterface interface {
 	GetUserByEmail(email string) (*user.User, error)
 	IsUserExisted(id uuid.UUID) (bool, error)
 	GetPlayerById(id uuid.UUID) (*data.Player, error)
+	IncreasePlayerScore(id uuid.UUID) error
 }

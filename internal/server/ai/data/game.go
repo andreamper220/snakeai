@@ -2,6 +2,8 @@ package data
 
 import (
 	"github.com/google/uuid"
+	"snake_ai/internal/logger"
+	"snake_ai/internal/server/storages"
 	"sync"
 
 	"snake_ai/internal/shared"
@@ -144,8 +146,11 @@ func (g *Game) handleCollisions(snake *Snake) {
 	}
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {
-		g.Scores[snake.UserId]++
-		snake.GrowCounter += 1
 		g.Food = NewFood(g.Width, g.Height)
+		snake.GrowCounter += 1
+		g.Scores[snake.UserId]++
+		if err := storages.Storage.IncreasePlayerScore(snake.UserId); err != nil {
+			logger.Log.Error(err.Error())
+		}
 	}
 }
