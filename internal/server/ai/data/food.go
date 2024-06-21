@@ -9,8 +9,8 @@ type Food struct {
 func NewFood(width, height int) *Food {
 	return &Food{
 		Position: Point{
-			X: rand.Intn(width),
-			Y: rand.Intn(height),
+			X: rand.Intn(width) + 1,
+			Y: rand.Intn(height) + 1,
 		},
 	}
 }

@@ -151,11 +151,21 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 
 	ws.Connections.Remove(userId)
 out:
-	for _, g := range game.Games {
+	for _, g := range game.CurrentGames.Games {
 		for _, p := range g.Party.Players {
 			if p.Id == userId {
-				delete(g.Snakes, userId)
+				for _, s := range g.Snakes {
+					if s.UserId == userId {
+						g.RemoveSnake(s)
+						break
+					}
+				}
 				g.Party.RemovePlayer(p)
+				logger.Log.Infof("user with ID %s exited from party with ID %s", userId.String(), g.Party.Id)
+				if len(g.Party.Players) == 0 {
+					g.Done <- true
+					game.CurrentGames.RemoveGame(g)
+				}
 				break out
 			}
 		}

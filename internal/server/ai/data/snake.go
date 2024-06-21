@@ -1,6 +1,13 @@
 package data
 
-import "sync"
+import (
+	"github.com/google/uuid"
+	"golang.org/x/exp/rand"
+	"sync"
+	"time"
+)
+
+var colors = [10]string{"yellow", "blue", "red", "purple", "pink", "orange", "black", "brown", "cyan", "gray"}
 
 type Point struct {
 	X int `json:"x"`
@@ -9,6 +16,8 @@ type Point struct {
 
 type Snake struct {
 	mux         sync.Mutex
+	UserId      uuid.UUID            `json:"user_id"`
+	Color       string               `json:"color"`
 	Body        []Point              `json:"body"`
 	Direction   Point                `json:"-"`
 	GrowCounter int                  `json:"-"`
@@ -16,13 +25,16 @@ type Snake struct {
 	AIFuncNum   int                  `json:"-"`
 }
 
-func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {
+func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake), userId uuid.UUID) *Snake {
+	rand.Seed(uint64(time.Now().Unix()))
 	return &Snake{
+		Color: colors[rand.Intn(len(colors))],
 		Body: []Point{
 			{X: x, Y: y},
 		},
 		Direction: Point{X: xTo, Y: yTo},
 		AiFunc:    aiFunc,
+		UserId:    userId,
 	}
 }
 func (s *Snake) Lock() {
@@ -44,23 +56,33 @@ func (s *Snake) Move() {
 		s.Body = s.Body[:len(s.Body)-1]
 	}
 }
-func (s *Snake) Down() {
-	if s.Direction.Y == 0 {
-		s.Direction = Point{X: 0, Y: 1}
-	}
-}
-func (s *Snake) Up() {
-	if s.Direction.Y == 0 {
-		s.Direction = Point{X: 0, Y: -1}
-	}
-}
 func (s *Snake) Left() {
 	if s.Direction.X == 0 {
-		s.Direction = Point{X: -1, Y: 0}
+		if s.Direction.Y == 1 {
+			s.Direction = Point{X: 1, Y: 0}
+		} else {
+			s.Direction = Point{X: -1, Y: 0}
+		}
+	} else if s.Direction.Y == 0 {
+		if s.Direction.X == 1 {
+			s.Direction = Point{X: 0, Y: -1}
+		} else {
+			s.Direction = Point{X: 0, Y: 1}
+		}
 	}
 }
 func (s *Snake) Right() {
 	if s.Direction.X == 0 {
-		s.Direction = Point{X: 1, Y: 0}
+		if s.Direction.Y == 1 {
+			s.Direction = Point{X: -1, Y: 0}
+		} else {
+			s.Direction = Point{X: 1, Y: 0}
+		}
+	} else if s.Direction.Y == 0 {
+		if s.Direction.X == 1 {
+			s.Direction = Point{X: 0, Y: 1}
+		} else {
+			s.Direction = Point{X: 0, Y: -1}
+		}
 	}
 }

@@ -5,8 +5,9 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
-	game "snake_ai/internal/server/ai/data"
 
+	game "snake_ai/internal/server/ai/data"
+	aijs "snake_ai/internal/server/ai/json"
 	"snake_ai/internal/server/routines"
 	"snake_ai/internal/server/storages"
 	"snake_ai/internal/shared/match/data"
@@ -22,6 +23,8 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 
 	pa := data.NewParty()
 	pa.Size = partyJson.Size
+	pa.Width = partyJson.Width
+	pa.Height = partyJson.Height
 
 	p, err := storages.Storage.GetPlayerById(userId)
 	if err != nil {
@@ -54,24 +57,23 @@ func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 }
 
 func PlayerRunAi(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
-	// TODO handle user snakes
-	snake := game.NewSnake(5, 5, 1, 0, []func(snake *game.Snake){
-		func(snake *game.Snake) { snake.Move() },
-		func(snake *game.Snake) { snake.Up() },
-		func(snake *game.Snake) { snake.Move() },
-		func(snake *game.Snake) { snake.Left() },
-		func(snake *game.Snake) { snake.Move() },
-		func(snake *game.Snake) { snake.Down() },
-		func(snake *game.Snake) { snake.Move() },
-		func(snake *game.Snake) { snake.Right() },
-	})
+	var aiJson aijs.AiJson
+	if err := json.NewDecoder(r.Body).Decode(&aiJson); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	snake := game.NewSnake(aiJson.X, aiJson.Y, aiJson.XTo, aiJson.YTo, game.GenerateAiFunctions(aiJson.Ai), userId)
 	// TODO refactor inner cycles for optimization
 out:
-	for _, g := range game.Games {
-		for _, p := range g.Party.Players {
-			if p.Id == userId {
-				g.Snakes[userId] = snake
-				break out
+	for _, g := range game.CurrentGames.Games {
+		if g != nil && g.Party != nil {
+			for _, p := range g.Party.Players {
+				if p.Id == userId {
+					g.AddSnake(snake, userId)
+					g.Scores[userId] += 0
+					break out
+				}
 			}
 		}
 	}

@@ -25,6 +25,7 @@ func HandleGames(game *data.Game, gameTicker time.Ticker) {
 			GameJobsChannel <- game
 		case <-game.Done:
 			gameTicker.Stop()
+			logger.Log.Infof("party with ID %s disbanded", game.Party.Id)
 			return
 		}
 	}

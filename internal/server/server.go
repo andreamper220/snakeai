@@ -7,6 +7,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
 	"net/http"
+	"snake_ai/internal/server/handlers/delete_handlers"
 
 	"snake_ai/internal/logger"
 	game "snake_ai/internal/server/ai/data"
@@ -35,6 +36,7 @@ func MakeRouter() *chi.Mux {
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player/ai`, middlewares.WithAuthenticate(post_handlers.PlayerRunAi, []byte(Config.SessionSecret)))
+	r.Delete(`/player/ai`, middlewares.WithAuthenticate(delete_handlers.PlayerRemoveAi, []byte(Config.SessionSecret)))
 	r.Get(`/ws`, middlewares.WithAuthenticate(ws_handlers.PlayerConnection, []byte(Config.SessionSecret)))
 
 	logger.Log.Infof("server listening on %s", Config.Address.String())
@@ -97,7 +99,7 @@ func Run() error {
 	logger.Log.Infof("%d go match workers started", numMatchWorkers)
 
 	numGameWorkers := 8
-	game.Games = make([]*game.Game, 0)
+	game.CurrentGames.Games = make([]*game.Game, 0)
 	for w := 0; w < numGameWorkers; w++ {
 		go gameroutines.GameWorker()
 	}

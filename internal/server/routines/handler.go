@@ -16,9 +16,9 @@ func HandlePartyMessages() {
 	for {
 		pa := <-PartiesChannel
 
-		// TODO change default w,h,i
-		g := game.NewGame(20, 20, pa)
-		game.Games = append(game.Games, g)
+		// TODO change default interval
+		g := game.NewGame(pa.Width, pa.Height, pa)
+		game.CurrentGames.AddGame(g)
 		go gameroutines.HandleGames(g, *time.NewTicker(time.Duration(1) * time.Second))
 
 		for _, p := range pa.Players {

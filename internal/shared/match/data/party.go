@@ -12,6 +12,8 @@ type Party struct {
 	Players  []*Player `json:"players"`
 	AvgSkill int       `json:"avg_skill"`
 	Size     int       `json:"size"`
+	Width    int       `json:"-"`
+	Height   int       `json:"-"`
 }
 
 func NewParty() Party {
