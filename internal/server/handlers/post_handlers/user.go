@@ -115,6 +115,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 	}
 
 	ws.Connections.Remove(u.Id)
+	game.RemovePlayer(u.Id)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(u); err != nil {
@@ -150,26 +151,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	})
 
 	ws.Connections.Remove(userId)
-out:
-	for _, g := range game.CurrentGames.Games {
-		for _, p := range g.Party.Players {
-			if p.Id == userId {
-				for _, s := range g.Snakes {
-					if s.UserId == userId {
-						g.RemoveSnake(s)
-						break
-					}
-				}
-				g.Party.RemovePlayer(p)
-				logger.Log.Infof("user with ID %s exited from party with ID %s", userId.String(), g.Party.Id)
-				if len(g.Party.Players) == 0 {
-					g.Done <- true
-					game.CurrentGames.RemoveGame(g)
-				}
-				break out
-			}
-		}
-	}
+	game.RemovePlayer(userId)
 
 	_, err = w.Write([]byte("You are logged out"))
 	if err != nil {

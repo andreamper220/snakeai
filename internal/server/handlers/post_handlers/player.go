@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
+	"snake_ai/internal/logger"
 
 	game "snake_ai/internal/server/ai/data"
 	aijs "snake_ai/internal/server/ai/json"
@@ -71,7 +72,13 @@ out:
 			for _, p := range g.Party.Players {
 				if p.Id == userId {
 					g.AddSnake(snake, userId)
-					g.Scores[userId] += 0
+					player, err := storages.Storage.GetPlayerById(userId)
+					if err != nil {
+						g.Scores[userId] += 0
+						logger.Log.Error(err.Error())
+					} else {
+						g.Scores[userId] = player.Skill
+					}
 					break out
 				}
 			}

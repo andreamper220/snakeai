@@ -154,3 +154,31 @@ func (g *Game) handleCollisions(snake *Snake) {
 		}
 	}
 }
+
+func RemovePlayer(userId uuid.UUID) {
+out:
+	for _, g := range CurrentGames.Games {
+		if g != nil {
+			pa := g.Party
+			if pa != nil {
+				for _, p := range pa.Players {
+					if p.Id == userId {
+						for _, s := range g.Snakes {
+							if s.UserId == userId {
+								g.RemoveSnake(s)
+								break
+							}
+						}
+						g.Party.RemovePlayer(p)
+						logger.Log.Infof("user with ID %s exited from party with ID %s", userId.String(), g.Party.Id)
+						if len(g.Party.Players) == 0 {
+							g.Done <- true
+							CurrentGames.RemoveGame(g)
+						}
+						break out
+					}
+				}
+			}
+		}
+	}
+}
