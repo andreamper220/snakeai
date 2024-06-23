@@ -17,4 +17,7 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
 COPY --from=builder /app/internal/templates /app/internal/templates
 COPY --from=builder /app/server /app/server
 
-CMD ["/app/server"]
+CMD ["/app/server", \
+     "-d", "host=snake_db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", \
+     "-r", "redis://snake_redis:6379" \
+     ]

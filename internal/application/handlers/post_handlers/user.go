@@ -2,20 +2,19 @@ package post_handlers
 
 import (
 	"bytes"
-	"context"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
+	"snake_ai/internal/infrastructure/caches"
 	"time"
 
 	"snake_ai/internal/application/cookies"
 	gamedata "snake_ai/internal/domain/game/data"
 	"snake_ai/internal/domain/user"
 	"snake_ai/internal/domain/ws"
-	"snake_ai/internal/infrastructure"
 	"snake_ai/internal/infrastructure/storages"
 	"snake_ai/pkg/logger"
 	"snake_ai/pkg/validator"
@@ -97,7 +96,11 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 	}
 	session := buf.String()
 
-	infrastructure.RedisClient.Set(context.Background(), "sessionID_"+session, u.Id.String(), expired)
+	if err := caches.Cache.AddSession(session, u.Id.String(), expired); err != nil {
+		logger.Log.Error(err.Error())
+		http.Error(w, "something happened setting your cache data", http.StatusInternalServerError)
+		return
+	}
 	cookie := http.Cookie{
 		Name:     "sessionID",
 		Value:    session,
@@ -134,7 +137,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 		return
 	}
 
-	if _, err = infrastructure.RedisClient.Del(context.Background(), "sessionID_"+buf.String()).Result(); err != nil {
+	if err = caches.Cache.DelSession(buf.String()); err != nil {
 		switch {
 		case errors.Is(err, redis.Nil):
 			http.Error(w, "you are not authorized to access this resource", http.StatusUnauthorized)

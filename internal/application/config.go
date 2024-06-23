@@ -48,8 +48,8 @@ func ParseFlags() {
 	var sessExpSec int
 
 	flag.Var(&addr, "a", "server address host:port")
-	flag.StringVar(&Config.DatabaseDSN, "d", "host=snake_db port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", "database DSN")
-	flag.StringVar(&Config.RedisURL, "r", "redis://snake_redis:6379", "redis URL")
+	flag.StringVar(&Config.DatabaseDSN, "d", "", "database DSN")
+	flag.StringVar(&Config.RedisURL, "r", "", "redis URL")
 	flag.StringVar(&Config.SessionSecret, "s", "1234567887654321", "secret to session id encrypt")
 	flag.IntVar(&sessExpSec, "e", 1800, "session expiration seconds")
 	flag.Parse()

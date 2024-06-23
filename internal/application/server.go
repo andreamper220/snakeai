@@ -17,7 +17,7 @@ import (
 	gameroutines "snake_ai/internal/domain/game/routines"
 	matchdata "snake_ai/internal/domain/match/data"
 	matchroutines "snake_ai/internal/domain/match/routines"
-	"snake_ai/internal/infrastructure"
+	"snake_ai/internal/infrastructure/caches"
 	"snake_ai/internal/infrastructure/storages"
 	"snake_ai/pkg/logger"
 )
@@ -60,13 +60,17 @@ func MakeStorage() error {
 	return nil
 }
 
-func MakeRedis() error {
-	opt, err := redis.ParseURL(Config.RedisURL)
-	if err != nil {
-		return err
+func MakeCache() error {
+	if Config.RedisURL != "" {
+		opt, err := redis.ParseURL(Config.RedisURL)
+		if err != nil {
+			return err
+		}
+		caches.Cache = caches.NewRedisCache(opt)
+	} else {
+		caches.Cache = caches.NewMemCache()
 	}
 
-	infrastructure.RedisClient = redis.NewClient(opt)
 	return nil
 }
 
@@ -86,7 +90,7 @@ func Run() error {
 	defer storage.Connection.Close()
 	logger.Log.Info("db connection established")
 
-	if err := MakeRedis(); err != nil {
+	if err := MakeCache(); err != nil {
 		return err
 	}
 	logger.Log.Info("redis connection established")
