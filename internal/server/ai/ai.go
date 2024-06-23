@@ -1,5 +1,0 @@
-package ai
-
-func SnakeTest() {
-
-}

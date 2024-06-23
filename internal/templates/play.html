@@ -316,7 +316,7 @@
                 context.strokeStyle = "black";
                 context.stroke();
 
-                obj.snakes.forEach(function (snake) {
+                for (const [userId, snake] of Object.entries(obj.snakes.data)) {
                     for (let i = 0; i < snake.body.length; i++) {
                         let points = snake.body[i];
                         if (i === 0) {
@@ -326,7 +326,7 @@
                         }
                         context.fillRect((points.x - 1) * boxSize + p, (points.y - 1) * boxSize + p, boxSize, boxSize);
                     }
-                })
+                }
 
                 context.fillStyle = "red";
                 context.fillRect((obj.food.position.x - 1) * boxSize + p, (obj.food.position.y - 1) * boxSize + p, boxSize, boxSize);

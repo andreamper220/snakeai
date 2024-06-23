@@ -1,10 +1,10 @@
 package main
 
-import "snake_ai/internal/server"
+import "snake_ai/internal/application"
 
 func main() {
-	server.ParseFlags()
-	if err := server.Run(); err != nil {
+	application.ParseFlags()
+	if err := application.Run(); err != nil {
 		panic(err)
 	}
 }
