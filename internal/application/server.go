@@ -45,16 +45,16 @@ func MakeRouter() *chi.Mux {
 }
 
 func MakeStorage() error {
-	if Config.DatabaseDSN == "" {
-		return errors.New("database DSN is not set")
-	}
-
-	conn, err := sql.Open("pgx", Config.DatabaseDSN)
-	if err == nil {
-		storages.Storage, err = storages.NewDBStorage(conn)
-		if err != nil {
-			return err
+	if Config.DatabaseDSN != "" {
+		conn, err := sql.Open("pgx", Config.DatabaseDSN)
+		if err == nil {
+			storages.Storage, err = storages.NewDBStorage(conn)
+			if err != nil {
+				return err
+			}
 		}
+	} else {
+		storages.Storage = storages.NewMemStorage()
 	}
 
 	return nil
