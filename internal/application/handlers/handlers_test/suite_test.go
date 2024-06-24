@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
-	"snake_ai/internal/domain/user"
+	"strings"
 	"testing"
 
 	"snake_ai/internal/application"
@@ -16,6 +17,7 @@ import (
 	gameroutines "snake_ai/internal/domain/game/routines"
 	matchdata "snake_ai/internal/domain/match/data"
 	matchroutines "snake_ai/internal/domain/match/routines"
+	"snake_ai/internal/domain/user"
 	"snake_ai/pkg/logger"
 )
 
@@ -100,6 +102,19 @@ func (s *HandlerTestSuite) Login(email, password string) *http.Cookie {
 		}
 	}
 	return sessionCookie
+}
+
+func (s *HandlerTestSuite) InitWebSocket(sessCookie *http.Cookie) *websocket.Conn {
+	var ws *websocket.Conn
+	u := "ws" + strings.TrimPrefix(s.Server.URL, "http") + "/ws"
+	header := http.Header{}
+	header.Add("Cookie", sessCookie.String())
+	ws, _, err := websocket.DefaultDialer.Dial(u, header)
+	if err != nil {
+		s.Fail(err.Error())
+	}
+
+	return ws
 }
 
 func TestHandlersSuite(t *testing.T) {

@@ -47,7 +47,7 @@ type Snakes struct {
 
 type Game struct {
 	mux    sync.Mutex
-	Id     string            `json:"-"`
+	Id     string            `json:"id"`
 	Width  int               `json:"width"`
 	Height int               `json:"height"`
 	Party  *matchdata.Party  `json:"-"`

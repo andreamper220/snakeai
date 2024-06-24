@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"net/http"
+
 	"snake_ai/internal/domain/user"
 )
 
