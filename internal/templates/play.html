@@ -282,7 +282,7 @@
         if (isJson(event.data)) {
             let obj = JSON.parse(event.data);
             // it's party created - let's play game!
-            if (Object.hasOwn(obj, 'id')) {
+            if (Object.hasOwn(obj, 'id') && Object.hasOwn(obj, 'players')) {
                 $('.form_container').fadeOut();
                 $('.game').show();
                 let playersHtml = "";
@@ -296,7 +296,7 @@
                 $('.players').html(playersHtml);
             }
             // it's field update
-            if (Object.hasOwn(obj, 'width') && Object.hasOwn(obj, 'height')) {
+            if (Object.hasOwn(obj, 'id') && Object.hasOwn(obj, 'width') && Object.hasOwn(obj, 'height')) {
                 width = obj.width;
                 height = obj.height;
 
