@@ -149,6 +149,7 @@ func (s *HandlerTestSuite) TestPlayerRemoveAi() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }

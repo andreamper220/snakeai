@@ -104,6 +104,20 @@ func (s *HandlerTestSuite) Login(email, password string) *http.Cookie {
 	return sessionCookie
 }
 
+func (s *HandlerTestSuite) Logout(sessCookie *http.Cookie) {
+	req, err := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s/logout", s.Server.URL),
+		nil,
+	)
+	s.Require().NoError(err)
+	req.AddCookie(sessCookie)
+
+	client := &http.Client{}
+	_, err = client.Do(req)
+	s.Require().NoError(err)
+}
+
 func (s *HandlerTestSuite) InitWebSocket(sessCookie *http.Cookie) *websocket.Conn {
 	var ws *websocket.Conn
 	u := "ws" + strings.TrimPrefix(s.Server.URL, "http") + "/ws"

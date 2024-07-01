@@ -134,6 +134,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }
@@ -266,6 +267,109 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
+	s.Logout(sessionCookie2)
+
+	defer s.Server.Close()
+}
+
+func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
+	s.Register(correctEmail1, correctPassword1)
+	sessionCookie1 := s.Login(correctEmail1, correctPassword1)
+	s.Register(correctEmail2, correctPassword2)
+	sessionCookie2 := s.Login(correctEmail2, correctPassword2)
+
+	s.Run("DELAYED /player/",
+		func() {
+			client := &http.Client{}
+			gameIdsChannel := make(chan string, 2)
+			// connect to party
+			ws2 := s.InitWebSocket(sessionCookie2)
+			go func(ws *websocket.Conn) {
+				defer ws.Close()
+				for {
+					var g2 gamedata.Game
+					err := ws.ReadJSON(&g2)
+					s.Require().NoError(err)
+					if g2.Id == "" {
+						continue
+					}
+					gameIdsChannel <- g2.Id
+					return
+				}
+			}(ws2)
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/player", s.Server.URL),
+				nil,
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie2)
+			res, err := client.Do(req)
+			s.Require().NoError(err)
+			s.Equal(http.StatusOK, res.StatusCode)
+
+			time.Sleep(3 * time.Second)
+
+			// create party
+			ws1 := s.InitWebSocket(sessionCookie1)
+			go func(ws *websocket.Conn) {
+				defer ws.Close()
+				for {
+					var g1 gamedata.Game
+					err := ws.ReadJSON(&g1)
+					s.Require().NoError(err)
+					if g1.Id == "" {
+						continue
+					}
+					gameIdsChannel <- g1.Id
+					return
+				}
+			}(ws1)
+			pa := matchjson.PartyJson{
+				Size:   2,
+				Width:  20,
+				Height: 20,
+			}
+			body, err := json.Marshal(pa)
+			s.Require().NoError(err)
+			req, err = http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/player/party", s.Server.URL),
+				bytes.NewBuffer(body),
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+			_, err = client.Do(req)
+			s.Require().NoError(err)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+		out:
+			for {
+				select {
+				case <-ctx.Done():
+					s.Fail("timeout waiting for websocket message")
+					break out
+				default:
+					var gameIds [2]string
+					n := 0
+					for gameId := range gameIdsChannel {
+						gameIds[n] = gameId
+						n++
+						if n == 2 {
+							break
+						}
+					}
+					s.Equal(gameIds[0], gameIds[1])
+					break out
+				}
+			}
+
+			s.Require().NoError(res.Body.Close())
+		})
+	s.Logout(sessionCookie1)
+	s.Logout(sessionCookie2)
 
 	defer s.Server.Close()
 }
@@ -301,7 +405,7 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 					Y:   5,
 					XTo: 1,
 					YTo: 0,
-					Ai:  "move,move,move,",
+					Ai:  "move,right,left,move,",
 				},
 			},
 			response{
@@ -389,6 +493,7 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }
