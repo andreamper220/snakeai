@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
+	"snake_ai/pkg/logger"
 
 	gamedata "snake_ai/internal/domain/game/data"
 	gamejson "snake_ai/internal/domain/game/json"
@@ -12,7 +13,6 @@ import (
 	matchjson "snake_ai/internal/domain/match/json"
 	matchroutines "snake_ai/internal/domain/match/routines"
 	"snake_ai/internal/infrastructure/storages"
-	"snake_ai/pkg/logger"
 )
 
 func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
@@ -70,12 +70,24 @@ out:
 		for _, p := range g.Party.Players {
 			if p.Id == userId {
 				g.AddSnake(snake, userId)
-				player, err := storages.Storage.GetPlayerById(userId)
+				pl, err := storages.Storage.GetPlayerById(userId)
 				if err != nil {
 					g.Scores[userId] += 0
 					logger.Log.Error(err.Error())
+					switch {
+					case errors.Is(err, storages.ErrRecordNotFound):
+						http.Error(w, err.Error(), http.StatusNotFound)
+					default:
+						http.Error(w, err.Error(), http.StatusBadRequest)
+					}
+					return
 				} else {
-					g.Scores[userId] = player.Skill
+					g.Scores[userId] = pl.Skill
+					w.Header().Set("Content-Type", "application/json")
+					if err = json.NewEncoder(w).Encode(pl); err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
 				}
 				break out
 			}

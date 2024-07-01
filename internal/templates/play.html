@@ -166,6 +166,15 @@
         #canvas {
             background: #fff;
         }
+        .box {
+            float: left;
+            height: 20px;
+            width: 20px;
+            margin-bottom: 15px;
+            border: 1px solid black;
+            clear: both;
+            background-color: white;
+        }
     </style>
 </head>
 <body>
@@ -237,9 +246,13 @@
         <br>
         <input id="cmd_list" type="text">
         <br><br>
+        Your snake color:
+        <br>
+        <div class='box'></div>
+        <br><br>
         <input id="add_snake_button" type="button" class="button" value="Create your snake!">
         <br>
-        <input id="remove_snake_button" type="button" class="button" value="Remove it from game">
+        <input id="remove_snake_button" type="button" class="button" value="Remove snake from game">
     </div>
     <canvas width="2000" height="2000" id="game_area"></canvas>
 </div>
@@ -269,6 +282,7 @@
         return true;
     }
 
+    var playerId = "";
     var players = {};
 
     let canvas = document.getElementById('game_area'),
@@ -316,7 +330,15 @@
                 context.strokeStyle = "black";
                 context.stroke();
 
+                $('.box').css('background-color', 'white');
                 for (const [userId, snake] of Object.entries(obj.snakes.data)) {
+                    if (userId === playerId) {
+                        if (snake.body.length === 1) {
+                            $('.box').css('background-color', 'green');
+                        } else {
+                            $('.box').css('background-color', snake.color);
+                        }
+                    }
                     for (let i = 0; i < snake.body.length; i++) {
                         let points = snake.body[i];
                         if (i === 0) {
@@ -405,7 +427,11 @@
                     + ', "y": ' + (height - $("#snake_y").val() + 1)
                     + ', "x_to": ' + xTo
                     + ', "y_to": ' + yTo
-                    + '}'
+                    + '}',
+                success : function(data) {
+                    console.log(data);
+                    playerId = data.id;
+                },
             })
         });
         $("#remove_snake_button").on('click', function () {
