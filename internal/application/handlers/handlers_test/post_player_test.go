@@ -133,6 +133,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }
@@ -265,6 +266,8 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
+	s.Logout(sessionCookie2)
 
 	defer s.Server.Close()
 }
@@ -364,6 +367,8 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 
 			s.Require().NoError(res.Body.Close())
 		})
+	s.Logout(sessionCookie1)
+	s.Logout(sessionCookie2)
 
 	defer s.Server.Close()
 }
@@ -487,6 +492,7 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }
