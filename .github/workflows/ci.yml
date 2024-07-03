@@ -27,8 +27,9 @@ jobs:
 
       - name: build and test
         run: |
-          go test ./...
+          go test -v -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
           go build ./...
+          cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "mocks" | grep -v "_mock" > $GITHUB_WORKSPACE/profile.cov
         env:
           TZ: "Europe/Moscow"
 

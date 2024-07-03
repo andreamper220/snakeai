@@ -30,9 +30,7 @@ func (games *Games) AddGame(game *Game) {
 			break
 		}
 	}
-	games.mux.Lock()
 	games.Games = append(games.Games, game)
-	games.mux.Unlock()
 }
 func (games *Games) RemoveGame(game *Game) {
 	result := make([]*Game, 0)
@@ -42,9 +40,7 @@ func (games *Games) RemoveGame(game *Game) {
 			result = append(result, g)
 		}
 	}
-	games.mux.Lock()
 	games.Games = result
-	games.mux.Unlock()
 }
 
 type Snakes struct {
@@ -154,7 +150,6 @@ func (g *Game) handleCollisions(snake *Snake) {
 		}
 	}
 	// another snake collision
-	g.Snakes.RLock()
 	for targetUserId, targetSnake := range g.Snakes.Data {
 		if snake == targetSnake {
 			continue
@@ -167,7 +162,6 @@ func (g *Game) handleCollisions(snake *Snake) {
 			}
 		}
 	}
-	g.Snakes.RUnlock()
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {
 		g.Food = NewFood(g.Width, g.Height)
