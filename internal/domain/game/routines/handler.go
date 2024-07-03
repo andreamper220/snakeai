@@ -4,10 +4,10 @@ import (
 	"github.com/google/uuid"
 	"time"
 
-	gamedata "snake_ai/internal/domain/game/data"
-	gamejson "snake_ai/internal/domain/game/json"
-	"snake_ai/internal/domain/ws"
-	"snake_ai/pkg/logger"
+	gamedata "snakeai/internal/domain/game/data"
+	gamejson "snakeai/internal/domain/game/json"
+	"snakeai/internal/domain/ws"
+	"snakeai/pkg/logger"
 )
 
 func HandleGames(game *gamedata.Game, gameTicker time.Ticker) {

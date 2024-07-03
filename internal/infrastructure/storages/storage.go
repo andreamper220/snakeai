@@ -3,8 +3,8 @@ package storages
 import (
 	"github.com/google/uuid"
 
-	matchdata "snake_ai/internal/domain/match/data"
-	"snake_ai/internal/domain/user"
+	matchdata "snakeai/internal/domain/match/data"
+	"snakeai/internal/domain/user"
 )
 
 var Storage StorageInterface

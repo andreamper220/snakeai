@@ -8,17 +8,17 @@ import (
 	"github.com/redis/go-redis/v9"
 	"net/http"
 
-	"snake_ai/internal/application/handlers/delete_handlers"
-	"snake_ai/internal/application/handlers/get_handlers"
-	"snake_ai/internal/application/handlers/post_handlers"
-	"snake_ai/internal/application/handlers/ws_handlers"
-	"snake_ai/internal/application/middlewares"
-	gamedata "snake_ai/internal/domain/game/data"
-	gameroutines "snake_ai/internal/domain/game/routines"
-	matchroutines "snake_ai/internal/domain/match/routines"
-	"snake_ai/internal/infrastructure/caches"
-	"snake_ai/internal/infrastructure/storages"
-	"snake_ai/pkg/logger"
+	"snakeai/internal/application/handlers/delete_handlers"
+	"snakeai/internal/application/handlers/get_handlers"
+	"snakeai/internal/application/handlers/post_handlers"
+	"snakeai/internal/application/handlers/ws_handlers"
+	"snakeai/internal/application/middlewares"
+	gamedata "snakeai/internal/domain/game/data"
+	gameroutines "snakeai/internal/domain/game/routines"
+	matchroutines "snakeai/internal/domain/match/routines"
+	"snakeai/internal/infrastructure/caches"
+	"snakeai/internal/infrastructure/storages"
+	"snakeai/pkg/logger"
 )
 
 func MakeRouter() *chi.Mux {

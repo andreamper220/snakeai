@@ -3,8 +3,8 @@ package match_routines
 import (
 	"time"
 
-	matchdata "snake_ai/internal/domain/match/data"
-	"snake_ai/pkg/logger"
+	matchdata "snakeai/internal/domain/match/data"
+	"snakeai/pkg/logger"
 )
 
 var PlayerJobsChannel = make(chan *matchdata.Player, 100)

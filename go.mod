@@ -1,4 +1,4 @@
-module snake_ai
+module snakeai
 
 go 1.22
 

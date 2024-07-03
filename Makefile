@@ -12,7 +12,7 @@ export COLOR__DEFAULT = \033[0m\n
 ###> IMPORTANT: define the COMPOSE_PROJECT_NAME here so
 ###> Makefile's targets will be able to perform shell magic.
 ###> Also, the value here and value in the .env should be the same, that's important
-export COMPOSE_PROJECT_NAME=go_snake_ai
+export COMPOSE_PROJECT_NAME=go_snakeai
 
 BUILD_DIR := .
 ENV_DIST_DIR = ./env.d/dotenv.d

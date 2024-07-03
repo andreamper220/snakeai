@@ -2,8 +2,8 @@ package game_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	gamedata "snake_ai/internal/domain/game/data"
-	matchdata "snake_ai/internal/domain/match/data"
+	gamedata "snakeai/internal/domain/game/data"
+	matchdata "snakeai/internal/domain/match/data"
 	"testing"
 )
 

@@ -3,7 +3,7 @@ package data
 import (
 	"sync"
 
-	"snake_ai/internal/domain"
+	"snakeai/internal/domain"
 )
 
 var CurrentParties = Parties{

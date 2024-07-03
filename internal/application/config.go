@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"snake_ai/pkg/logger"
+	"snakeai/pkg/logger"
 )
 
 var Config struct {

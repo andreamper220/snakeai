@@ -1,7 +1,7 @@
 package routines
 
 import (
-	gamedata "snake_ai/internal/domain/game/data"
+	gamedata "snakeai/internal/domain/game/data"
 )
 
 var GameJobsChannel = make(chan *gamedata.Game, 100)

@@ -4,9 +4,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"snake_ai/pkg/logger"
+	"snakeai/pkg/logger"
 
-	"snake_ai/internal/domain/ws"
+	"snakeai/internal/domain/ws"
 )
 
 func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {

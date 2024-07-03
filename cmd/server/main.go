@@ -1,6 +1,6 @@
 package main
 
-import "snake_ai/internal/application"
+import "snakeai/internal/application"
 
 func main() {
 	application.ParseFlags()

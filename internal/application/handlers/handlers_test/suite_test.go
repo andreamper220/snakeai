@@ -12,12 +12,12 @@ import (
 	"strings"
 	"testing"
 
-	"snake_ai/internal/application"
-	gamedata "snake_ai/internal/domain/game/data"
-	gameroutines "snake_ai/internal/domain/game/routines"
-	matchroutines "snake_ai/internal/domain/match/routines"
-	"snake_ai/internal/domain/user"
-	"snake_ai/pkg/logger"
+	"snakeai/internal/application"
+	gamedata "snakeai/internal/domain/game/data"
+	gameroutines "snakeai/internal/domain/game/routines"
+	matchroutines "snakeai/internal/domain/match/routines"
+	"snakeai/internal/domain/user"
+	"snakeai/pkg/logger"
 )
 
 type HandlerTestSuite struct {

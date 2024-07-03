@@ -9,8 +9,8 @@ import (
 	"github.com/pressly/goose/v3"
 	"time"
 
-	matchdata "snake_ai/internal/domain/match/data"
-	"snake_ai/internal/domain/user"
+	matchdata "snakeai/internal/domain/match/data"
+	"snakeai/internal/domain/user"
 )
 
 var (

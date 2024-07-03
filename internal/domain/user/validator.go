@@ -1,7 +1,7 @@
 package user
 
 import (
-	"snake_ai/pkg/validator"
+	"snakeai/pkg/validator"
 )
 
 func validateEmail(v *validator.Validator, email string) {

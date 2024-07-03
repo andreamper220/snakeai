@@ -5,14 +5,14 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
-	"snake_ai/pkg/logger"
+	"snakeai/pkg/logger"
 
-	gamedata "snake_ai/internal/domain/game/data"
-	gamejson "snake_ai/internal/domain/game/json"
-	matchdata "snake_ai/internal/domain/match/data"
-	matchjson "snake_ai/internal/domain/match/json"
-	matchroutines "snake_ai/internal/domain/match/routines"
-	"snake_ai/internal/infrastructure/storages"
+	gamedata "snakeai/internal/domain/game/data"
+	gamejson "snakeai/internal/domain/game/json"
+	matchdata "snakeai/internal/domain/match/data"
+	matchjson "snakeai/internal/domain/match/json"
+	matchroutines "snakeai/internal/domain/match/routines"
+	"snakeai/internal/infrastructure/storages"
 )
 
 func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
@@ -66,13 +66,16 @@ func PlayerRunAi(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 
 	snake := gamedata.NewSnake(aiJson.X, aiJson.Y, aiJson.XTo, aiJson.YTo, gamedata.GenerateAiFunctions(aiJson.Ai))
 out:
-	for _, g := range gamedata.CurrentGames.Games {
+	for _, g := range gamedata.CurrentGames.GetGames() {
+		g.RLock()
 		for _, p := range g.Party.Players {
 			if p.Id == userId {
 				g.AddSnake(snake, userId)
 				pl, err := storages.Storage.GetPlayerById(userId)
 				if err != nil {
+					g.Lock()
 					g.Scores[userId] += 0
+					g.Unlock()
 					logger.Log.Error(err.Error())
 					switch {
 					case errors.Is(err, storages.ErrRecordNotFound):
@@ -94,5 +97,6 @@ out:
 				break out
 			}
 		}
+		g.RUnlock()
 	}
 }

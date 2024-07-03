@@ -4,11 +4,11 @@ import (
 	"github.com/stretchr/testify/suite"
 	"testing"
 
-	"snake_ai/internal/application"
-	gamedata "snake_ai/internal/domain/game/data"
-	"snake_ai/internal/domain/user"
-	"snake_ai/internal/infrastructure/storages"
-	"snake_ai/pkg/logger"
+	"snakeai/internal/application"
+	gamedata "snakeai/internal/domain/game/data"
+	"snakeai/internal/domain/user"
+	"snakeai/internal/infrastructure/storages"
+	"snakeai/pkg/logger"
 )
 
 type GameTestSuite struct {

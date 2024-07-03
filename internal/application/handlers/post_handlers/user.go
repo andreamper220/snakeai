@@ -8,16 +8,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
-	"snake_ai/internal/infrastructure/caches"
+	"snakeai/internal/infrastructure/caches"
 	"time"
 
-	"snake_ai/internal/application/cookies"
-	gamedata "snake_ai/internal/domain/game/data"
-	"snake_ai/internal/domain/user"
-	"snake_ai/internal/domain/ws"
-	"snake_ai/internal/infrastructure/storages"
-	"snake_ai/pkg/logger"
-	"snake_ai/pkg/validator"
+	"snakeai/internal/application/cookies"
+	gamedata "snakeai/internal/domain/game/data"
+	"snakeai/internal/domain/user"
+	"snakeai/internal/domain/ws"
+	"snakeai/internal/infrastructure/storages"
+	"snakeai/pkg/logger"
+	"snakeai/pkg/validator"
 )
 
 func UserRegister(w http.ResponseWriter, r *http.Request) {

@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	gamejson "snake_ai/internal/domain/game/json"
-	matchdata "snake_ai/internal/domain/match/data"
-	matchjson "snake_ai/internal/domain/match/json"
+	gamejson "snakeai/internal/domain/game/json"
+	matchdata "snakeai/internal/domain/match/data"
+	matchjson "snakeai/internal/domain/match/json"
 )
 
 const (
