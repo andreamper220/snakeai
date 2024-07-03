@@ -6,6 +6,37 @@ import (
 	"snake_ai/internal/domain"
 )
 
+var CurrentParties = Parties{
+	Parties: make([]*Party, 0),
+}
+
+type Parties struct {
+	mux     sync.RWMutex
+	Parties []*Party
+}
+
+func (parties *Parties) GetParties() []*Party {
+	parties.mux.RLock()
+	defer parties.mux.RUnlock()
+	return parties.Parties
+}
+func (parties *Parties) AddParty(pa *Party) {
+	parties.mux.Lock()
+	defer parties.mux.Unlock()
+	parties.Parties = append(parties.Parties, pa)
+}
+func (parties *Parties) RemoveParty(pa *Party) {
+	parties.mux.Lock()
+	defer parties.mux.Unlock()
+	result := make([]*Party, 0)
+	for _, par := range parties.Parties {
+		if par != pa {
+			result = append(result, par)
+		}
+	}
+	parties.Parties = result
+}
+
 type Party struct {
 	mux      sync.Mutex
 	Id       string    `json:"id"`

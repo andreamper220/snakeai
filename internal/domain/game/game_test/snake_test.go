@@ -71,8 +71,10 @@ func (s *GameTestSuite) TestSnakeMove() {
 				g.Update()
 				time.Sleep(100 * time.Millisecond)
 			}
+			sn.Lock()
 			s.Assert().Equal(tt.x, sn.Body[0].X)
 			s.Assert().Equal(tt.y, sn.Body[0].Y)
+			sn.Unlock()
 			g.RemoveSnake(userId)
 		})
 	}
@@ -126,8 +128,10 @@ func (s *GameTestSuite) TestSnakeRotation() {
 			for _, direction := range tt.directions {
 				g.Update()
 				time.Sleep(100 * time.Millisecond)
+				sn.Lock()
 				s.Assert().Equal(direction.X, sn.Direction.X)
 				s.Assert().Equal(direction.Y, sn.Direction.Y)
+				sn.Unlock()
 			}
 			g.RemoveSnake(userId)
 		})
@@ -194,7 +198,7 @@ func (s *GameTestSuite) TestSnakeEdgeCollision() {
 			time.Sleep(100 * time.Millisecond)
 			g.Update()
 			time.Sleep(100 * time.Millisecond)
-			s.Assert().Equal(0, len(g.Snakes.Data))
+			s.Assert().Equal(0, len(g.GetSnakes()))
 		})
 	}
 
@@ -222,7 +226,9 @@ func (s *GameTestSuite) TestSnakeFoodEating() {
 	time.Sleep(100 * time.Millisecond)
 	g.Update()
 	time.Sleep(100 * time.Millisecond)
+	sn.Lock()
 	s.Assert().Equal(2, len(sn.Body))
+	sn.Unlock()
 
 	s.games.RemoveGame(g)
 }

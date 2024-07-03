@@ -15,7 +15,6 @@ import (
 	"snake_ai/internal/application"
 	gamedata "snake_ai/internal/domain/game/data"
 	gameroutines "snake_ai/internal/domain/game/routines"
-	matchdata "snake_ai/internal/domain/match/data"
 	matchroutines "snake_ai/internal/domain/match/routines"
 	"snake_ai/internal/domain/user"
 	"snake_ai/pkg/logger"
@@ -40,9 +39,8 @@ func (s *HandlerTestSuite) SetupTest() {
 		s.Fail(err.Error())
 	}
 	numMatchWorkers := 4
-	parties := make([]*matchdata.Party, 0)
 	for w := 0; w < numMatchWorkers; w++ {
-		go matchroutines.MatchWorker(&parties)
+		go matchroutines.MatchWorker()
 	}
 	numGameWorkers := 8
 	gamedata.CurrentGames.Games = make([]*gamedata.Game, 0)

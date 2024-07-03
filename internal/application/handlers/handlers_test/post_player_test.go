@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	gamedata "snake_ai/internal/domain/game/data"
 	gamejson "snake_ai/internal/domain/game/json"
 	matchdata "snake_ai/internal/domain/match/data"
 	matchjson "snake_ai/internal/domain/match/json"
@@ -186,7 +185,7 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 					go func(ws *websocket.Conn) {
 						defer ws.Close()
 						for {
-							var g1 gamedata.Game
+							var g1 gamejson.GameJson
 							err := ws.ReadJSON(&g1)
 							s.Require().NoError(err)
 							if g1.Id == "" {
@@ -217,7 +216,7 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 					go func(ws *websocket.Conn) {
 						defer ws.Close()
 						for {
-							var g2 gamedata.Game
+							var g2 gamejson.GameJson
 							err = ws.ReadJSON(&g2)
 							s.Require().NoError(err)
 							if g2.Id == "" {
@@ -288,7 +287,7 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 			go func(ws *websocket.Conn) {
 				defer ws.Close()
 				for {
-					var g2 gamedata.Game
+					var g2 gamejson.GameJson
 					err := ws.ReadJSON(&g2)
 					s.Require().NoError(err)
 					if g2.Id == "" {
@@ -316,7 +315,7 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 			go func(ws *websocket.Conn) {
 				defer ws.Close()
 				for {
-					var g1 gamedata.Game
+					var g1 gamejson.GameJson
 					err := ws.ReadJSON(&g1)
 					s.Require().NoError(err)
 					if g1.Id == "" {
@@ -428,7 +427,7 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 					go func(ws *websocket.Conn) {
 						defer ws.Close()
 						for {
-							var g1 gamedata.Game
+							var g1 gamejson.GameJson
 							err := ws.ReadJSON(&g1)
 							s.Require().NoError(err)
 							if len(g1.Snakes.Data) < 1 {

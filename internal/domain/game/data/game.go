@@ -13,48 +13,55 @@ import (
 var CurrentGames Games
 
 type Games struct {
-	mux   sync.Mutex
+	mux   sync.RWMutex
 	Games []*Game
 }
 
+func (games *Games) GetGames() []*Game {
+	games.mux.RLock()
+	defer games.mux.RUnlock()
+	return games.Games
+}
 func (games *Games) AddGame(game *Game) {
-	games.mux.Lock()
-	defer games.mux.Unlock()
-	for _, g := range games.Games {
+	gg := games.GetGames()
+	for _, g := range gg {
 		if g == game {
 			games.RemoveGame(game)
 			break
 		}
 	}
+	games.mux.Lock()
 	games.Games = append(games.Games, game)
+	games.mux.Unlock()
 }
 func (games *Games) RemoveGame(game *Game) {
-	games.mux.Lock()
-	defer games.mux.Unlock()
 	result := make([]*Game, 0)
-	for _, g := range games.Games {
+	gg := games.GetGames()
+	for _, g := range gg {
 		if g != game {
 			result = append(result, g)
 		}
 	}
+	games.mux.Lock()
 	games.Games = result
+	games.mux.Unlock()
 }
 
 type Snakes struct {
-	mu   sync.RWMutex
+	sync.RWMutex
 	Data map[uuid.UUID]*Snake `json:"data"`
 }
 
 type Game struct {
-	mux    sync.Mutex
-	Id     string            `json:"id"`
-	Width  int               `json:"width"`
-	Height int               `json:"height"`
-	Party  *matchdata.Party  `json:"-"`
-	Snakes Snakes            `json:"snakes"`
-	Scores map[uuid.UUID]int `json:"scores"`
-	Food   *Food             `json:"food"`
-	Done   chan bool         `json:"-"`
+	sync.RWMutex
+	Id     string
+	Width  int
+	Height int
+	Party  *matchdata.Party
+	Snakes Snakes
+	Scores map[uuid.UUID]int
+	Food   *Food
+	Done   chan bool
 }
 
 func NewGame(width, height int, party *matchdata.Party) *Game {
@@ -73,28 +80,27 @@ func NewGame(width, height int, party *matchdata.Party) *Game {
 
 	return game
 }
-func (g *Game) lock() {
-	g.mux.Lock()
-}
-func (g *Game) unlock() {
-	g.mux.Unlock()
-}
 func (g *Game) AddSnake(snake *Snake, userId uuid.UUID) {
-	g.Snakes.mu.Lock()
-	defer g.Snakes.mu.Unlock()
+	g.Snakes.Lock()
+	defer g.Snakes.Unlock()
 	g.Snakes.Data[userId] = snake
 }
 func (g *Game) RemoveSnake(userId uuid.UUID) {
-	g.Snakes.mu.Lock()
-	defer g.Snakes.mu.Unlock()
+	g.Snakes.Lock()
+	defer g.Snakes.Unlock()
 	_, exists := g.Snakes.Data[userId]
 	if exists {
 		delete(g.Snakes.Data, userId)
 	}
 }
+func (g *Game) GetSnakes() map[uuid.UUID]*Snake {
+	g.Snakes.RLock()
+	defer g.Snakes.RUnlock()
+	return g.Snakes.Data
+}
 func (g *Game) GetUserIdBySnake(snake *Snake) uuid.UUID {
-	g.Snakes.mu.RLock()
-	defer g.Snakes.mu.RUnlock()
+	g.Snakes.RLock()
+	defer g.Snakes.RUnlock()
 	for userId, s := range g.Snakes.Data {
 		if s == snake {
 			return userId
@@ -103,9 +109,6 @@ func (g *Game) GetUserIdBySnake(snake *Snake) uuid.UUID {
 	return uuid.Nil
 }
 func (g *Game) Update() {
-	g.lock()
-	defer g.unlock()
-
 	snakeJobsChannel := make(chan *Snake, 10)
 	numSnakeWorkers := 8
 	for w := 0; w < numSnakeWorkers; w++ {
@@ -123,9 +126,12 @@ func (g *Game) Update() {
 		}()
 	}
 
-	for _, snake := range g.Snakes.Data {
+	snakes := g.GetSnakes()
+	g.Snakes.RLock()
+	for _, snake := range snakes {
 		snakeJobsChannel <- snake
 	}
+	g.Snakes.RUnlock()
 	close(snakeJobsChannel)
 }
 func (g *Game) handleCollisions(snake *Snake) {
@@ -148,6 +154,7 @@ func (g *Game) handleCollisions(snake *Snake) {
 		}
 	}
 	// another snake collision
+	g.Snakes.RLock()
 	for targetUserId, targetSnake := range g.Snakes.Data {
 		if snake == targetSnake {
 			continue
@@ -160,6 +167,7 @@ func (g *Game) handleCollisions(snake *Snake) {
 			}
 		}
 	}
+	g.Snakes.RUnlock()
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {
 		g.Food = NewFood(g.Width, g.Height)

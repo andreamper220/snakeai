@@ -16,20 +16,17 @@ func HandlePartyMessages() {
 	for {
 		pa := <-PartiesChannel
 
-		// TODO change default interval
+		// TODO change default interval ?
 		g := gamedata.NewGame(pa.Width, pa.Height, pa)
 		gamedata.CurrentGames.AddGame(g)
 		go gameroutines.HandleGames(g, *time.NewTicker(time.Duration(1) * time.Second))
 
 		for _, p := range pa.Players {
-			conn, exists := ws.Connections.Get(p.Id)
-			if exists {
-				err := conn.WriteJSON(pa)
-				if err != nil {
-					conn.Close()
-					ws.Connections.Remove(p.Id)
-					logger.Log.Errorf("error writing to websocket: %s", err.Error())
-				}
+			err := ws.Connections.WriteJSON(p.Id, pa)
+			if err != nil {
+				ws.Connections.Remove(p.Id)
+				logger.Log.Errorf("error writing to websocket: %s", err.Error())
+			} else {
 				logger.Log.Infof("player with ID %s found party with ID %s", p.Id, pa.Id)
 			}
 		}

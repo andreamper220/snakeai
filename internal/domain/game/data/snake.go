@@ -9,18 +9,18 @@ import (
 var colors = [10]string{"yellow", "blue", "red", "purple", "pink", "orange", "black", "brown", "cyan", "gray"}
 
 type Point struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X int
+	Y int
 }
 
 type Snake struct {
 	mux         sync.Mutex
-	Color       string               `json:"color"`
-	Body        []Point              `json:"body"`
-	Direction   Point                `json:"-"`
-	GrowCounter int                  `json:"-"`
-	AiFunc      []func(snake *Snake) `json:"-"`
-	AIFuncNum   int                  `json:"-"`
+	Color       string
+	Body        []Point
+	Direction   Point
+	GrowCounter int
+	AiFunc      []func(snake *Snake)
+	AIFuncNum   int
 }
 
 func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {

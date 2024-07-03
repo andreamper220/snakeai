@@ -9,9 +9,7 @@ import (
 
 var PlayerJobsChannel = make(chan *matchdata.Player, 100)
 
-func MatchWorker(
-	parties *[]*matchdata.Party,
-) {
+func MatchWorker() {
 	for p := range PlayerJobsChannel {
 		if p.InProcess {
 			continue
@@ -19,11 +17,12 @@ func MatchWorker(
 		if p.InParty {
 			if len(p.Party.Players) == p.Party.Size {
 				PartiesChannel <- p.Party
-				removeParty(parties, p.Party)
+				matchdata.CurrentParties.RemoveParty(p.Party)
 				logger.Log.Infof("formed party: %v", p.Party)
 			} else {
 				isPartyExisted := false
-				for _, pa := range *parties {
+				parties := matchdata.CurrentParties.GetParties()
+				for _, pa := range parties {
 					if p.Party == pa {
 						isPartyExisted = true
 						break
@@ -31,13 +30,13 @@ func MatchWorker(
 				}
 
 				if !isPartyExisted {
-					addParty(parties, p.Party)
+					matchdata.CurrentParties.AddParty(p.Party)
 				}
 			}
 			continue
 		}
 
-		pa, err := p.FindParty(*parties)
+		pa, err := p.FindParty()
 		if err != nil {
 			logger.Log.Infof("player with ID %s already searching for party", p.Id)
 			continue
@@ -48,24 +47,12 @@ func MatchWorker(
 
 		if pa != nil && len(pa.Players) == pa.Size {
 			PartiesChannel <- p.Party
-			removeParty(parties, p.Party)
+			matchdata.CurrentParties.RemoveParty(p.Party)
 			logger.Log.Infof("formed party: %v", pa)
 		} else {
 			addDelayToReenqueuePlayer(p, PlayerJobsChannel)
 		}
 	}
-}
-func addParty(parties *[]*matchdata.Party, pa *matchdata.Party) {
-	*parties = append(*parties, pa)
-}
-func removeParty(parties *[]*matchdata.Party, pa *matchdata.Party) {
-	result := make([]*matchdata.Party, 0)
-	for _, par := range *parties {
-		if par != pa {
-			result = append(result, par)
-		}
-	}
-	*parties = result
 }
 func addDelayToReenqueuePlayer(p *matchdata.Player, playerJobsChannel chan *matchdata.Player) {
 	timer := time.NewTimer(3 * time.Second)

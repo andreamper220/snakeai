@@ -5,7 +5,6 @@ import (
 	gamedata "snake_ai/internal/domain/game/data"
 	matchdata "snake_ai/internal/domain/match/data"
 	"testing"
-	"time"
 )
 
 func TestAddGame(t *testing.T) {
@@ -24,11 +23,11 @@ func TestAddGame(t *testing.T) {
 	t.Run("existing", func(t *testing.T) {
 		pa := matchdata.NewParty()
 		g := gamedata.NewGame(gameWidth, gameHeight, &pa)
-		go gamedata.CurrentGames.AddGame(g)
-		go gamedata.CurrentGames.AddGame(g)
-		time.Sleep(1 * time.Second)
+		gamedata.CurrentGames.AddGame(g)
+		gamedata.CurrentGames.AddGame(g)
+		games := gamedata.CurrentGames.GetGames()
 		count := 0
-		for _, gg := range gamedata.CurrentGames.Games {
+		for _, gg := range games {
 			if gg.Id == g.Id {
 				count++
 			}

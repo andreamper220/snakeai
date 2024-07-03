@@ -15,7 +15,6 @@ import (
 	"snake_ai/internal/application/middlewares"
 	gamedata "snake_ai/internal/domain/game/data"
 	gameroutines "snake_ai/internal/domain/game/routines"
-	matchdata "snake_ai/internal/domain/match/data"
 	matchroutines "snake_ai/internal/domain/match/routines"
 	"snake_ai/internal/infrastructure/caches"
 	"snake_ai/internal/infrastructure/storages"
@@ -96,9 +95,8 @@ func Run() error {
 	logger.Log.Info("redis connection established")
 
 	numMatchWorkers := 4
-	parties := make([]*matchdata.Party, 0)
 	for w := 0; w < numMatchWorkers; w++ {
-		go matchroutines.MatchWorker(&parties)
+		go matchroutines.MatchWorker()
 	}
 	logger.Log.Infof("%d go match workers started", numMatchWorkers)
 

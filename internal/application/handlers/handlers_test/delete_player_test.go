@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	gamedata "snake_ai/internal/domain/game/data"
 	gamejson "snake_ai/internal/domain/game/json"
 	matchjson "snake_ai/internal/domain/match/json"
 )
@@ -61,7 +60,7 @@ func (s *HandlerTestSuite) TestPlayerRemoveAi() {
 						defer ws.Close()
 						userId := uuid.Nil
 						for {
-							var g1 gamedata.Game
+							var g1 gamejson.GameJson
 							err := ws.ReadJSON(&g1)
 							s.Require().NoError(err)
 							if g1.Id != "" {
@@ -149,7 +148,6 @@ func (s *HandlerTestSuite) TestPlayerRemoveAi() {
 				s.Require().NoError(res.Body.Close())
 			})
 	}
-	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
 }

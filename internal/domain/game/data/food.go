@@ -3,7 +3,7 @@ package data
 import "math/rand"
 
 type Food struct {
-	Position Point `json:"position"`
+	Position Point
 }
 
 func NewFood(width, height int) *Food {

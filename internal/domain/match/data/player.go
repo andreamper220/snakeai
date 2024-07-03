@@ -27,12 +27,13 @@ func (player *Player) Lock() {
 func (player *Player) Unlock() {
 	player.mux.Unlock()
 }
-func (player *Player) FindParty(parties []*Party) (*Party, error) {
+func (player *Player) FindParty() (*Party, error) {
 	if player.InProcess {
 		return nil, errors.New("player already searching for party")
 	}
 
 	player.InProcess = true
+	parties := CurrentParties.GetParties()
 	goodParties := player.getGoodParties(parties)
 	return findBestParty(goodParties), nil
 }

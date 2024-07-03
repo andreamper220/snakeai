@@ -4,9 +4,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"snake_ai/pkg/logger"
 
 	"snake_ai/internal/domain/ws"
-	"snake_ai/pkg/logger"
 )
 
 func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
@@ -19,9 +19,22 @@ func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) 
 		return
 	}
 
-	_, exists := ws.Connections.Get(userId)
-	if !exists {
-		ws.Connections.Add(userId, c)
-		logger.Log.Infof("ws connection added to player with ID = %s", userId.String())
-	}
+	closeChannel := make(chan bool, 1)
+	messagesChannel := make(chan []byte, 100)
+	go func(conn *websocket.Conn) {
+		defer close(closeChannel)
+		defer close(messagesChannel)
+		for {
+			select {
+			case message := <-messagesChannel:
+				err = conn.WriteMessage(websocket.TextMessage, message)
+				if err != nil {
+					logger.Log.Errorf("error writing to websocket: %s", err.Error())
+				}
+			case <-closeChannel:
+				return
+			}
+		}
+	}(c)
+	ws.Connections.Add(userId, messagesChannel, closeChannel)
 }

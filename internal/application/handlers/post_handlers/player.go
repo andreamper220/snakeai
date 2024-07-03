@@ -82,7 +82,9 @@ out:
 					}
 					return
 				} else {
+					g.Lock()
 					g.Scores[userId] = pl.Skill
+					g.Unlock()
 					w.Header().Set("Content-Type", "application/json")
 					if err = json.NewEncoder(w).Encode(pl); err != nil {
 						http.Error(w, err.Error(), http.StatusInternalServerError)

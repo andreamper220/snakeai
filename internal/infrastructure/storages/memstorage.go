@@ -59,6 +59,8 @@ func (ms *MemStorage) GetPlayerById(id uuid.UUID) (*matchdata.Player, error) {
 	return nil, ErrRecordNotFound
 }
 func (ms *MemStorage) IncreasePlayerScore(id uuid.UUID) error {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
 	for _, p := range ms.players {
 		if p.Id == id {
 			p.Skill++
