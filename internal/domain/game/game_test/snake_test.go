@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"time"
 
-	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
-	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	gamedata "github.com/andreamper220/snakeai/internal/domain/game/data"
+	matchdata "github.com/andreamper220/snakeai/internal/domain/match/data"
 )
 
 const (

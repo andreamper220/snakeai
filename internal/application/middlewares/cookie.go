@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/andreamper220/snakeai.git/internal/application/cookies"
-	"github.com/andreamper220/snakeai.git/internal/infrastructure/storages"
+	"github.com/andreamper220/snakeai/internal/application/cookies"
+	"github.com/andreamper220/snakeai/internal/infrastructure/storages"
 )
 
 func WithAuthenticate(h func(w http.ResponseWriter, r *http.Request, userId uuid.UUID), secret []byte) http.HandlerFunc {

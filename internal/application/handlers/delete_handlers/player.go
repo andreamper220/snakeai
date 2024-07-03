@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 
-	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
+	gamedata "github.com/andreamper220/snakeai/internal/domain/game/data"
 )
 
 func PlayerRemoveAi(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {

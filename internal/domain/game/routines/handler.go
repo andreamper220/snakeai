@@ -4,10 +4,10 @@ import (
 	"github.com/google/uuid"
 	"time"
 
-	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
-	gamejson "github.com/andreamper220/snakeai.git/internal/domain/game/json"
-	"github.com/andreamper220/snakeai.git/internal/domain/ws"
-	"github.com/andreamper220/snakeai.git/pkg/logger"
+	gamedata "github.com/andreamper220/snakeai/internal/domain/game/data"
+	gamejson "github.com/andreamper220/snakeai/internal/domain/game/json"
+	"github.com/andreamper220/snakeai/internal/domain/ws"
+	"github.com/andreamper220/snakeai/pkg/logger"
 )
 
 func HandleGames(game *gamedata.Game, gameTicker time.Ticker) {

@@ -3,7 +3,7 @@ package data
 import (
 	"sync"
 
-	"github.com/andreamper220/snakeai.git/internal/domain"
+	"github.com/andreamper220/snakeai/internal/domain"
 )
 
 var CurrentParties = Parties{

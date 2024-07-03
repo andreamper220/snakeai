@@ -1,4 +1,4 @@
-module github.com/andreamper220/snakeai.git
+module github.com/andreamper220/snakeai
 
 go 1.22
 

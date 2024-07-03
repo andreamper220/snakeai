@@ -1,12 +1,12 @@
 package ws_handlers
 
 import (
-	"github.com/andreamper220/snakeai.git/pkg/logger"
+	"github.com/andreamper220/snakeai/pkg/logger"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"net/http"
 
-	"github.com/andreamper220/snakeai.git/internal/domain/ws"
+	"github.com/andreamper220/snakeai/internal/domain/ws"
 )
 
 func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {

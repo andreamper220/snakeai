@@ -8,17 +8,17 @@ import (
 	"github.com/redis/go-redis/v9"
 	"net/http"
 
-	"github.com/andreamper220/snakeai.git/internal/application/handlers/delete_handlers"
-	"github.com/andreamper220/snakeai.git/internal/application/handlers/get_handlers"
-	"github.com/andreamper220/snakeai.git/internal/application/handlers/post_handlers"
-	"github.com/andreamper220/snakeai.git/internal/application/handlers/ws_handlers"
-	"github.com/andreamper220/snakeai.git/internal/application/middlewares"
-	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
-	gameroutines "github.com/andreamper220/snakeai.git/internal/domain/game/routines"
-	matchroutines "github.com/andreamper220/snakeai.git/internal/domain/match/routines"
-	"github.com/andreamper220/snakeai.git/internal/infrastructure/caches"
-	"github.com/andreamper220/snakeai.git/internal/infrastructure/storages"
-	"github.com/andreamper220/snakeai.git/pkg/logger"
+	"github.com/andreamper220/snakeai/internal/application/handlers/delete_handlers"
+	"github.com/andreamper220/snakeai/internal/application/handlers/get_handlers"
+	"github.com/andreamper220/snakeai/internal/application/handlers/post_handlers"
+	"github.com/andreamper220/snakeai/internal/application/handlers/ws_handlers"
+	"github.com/andreamper220/snakeai/internal/application/middlewares"
+	gamedata "github.com/andreamper220/snakeai/internal/domain/game/data"
+	gameroutines "github.com/andreamper220/snakeai/internal/domain/game/routines"
+	matchroutines "github.com/andreamper220/snakeai/internal/domain/match/routines"
+	"github.com/andreamper220/snakeai/internal/infrastructure/caches"
+	"github.com/andreamper220/snakeai/internal/infrastructure/storages"
+	"github.com/andreamper220/snakeai/pkg/logger"
 )
 
 func MakeRouter() *chi.Mux {
