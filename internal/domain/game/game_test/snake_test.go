@@ -102,10 +102,10 @@ func (s *GameTestSuite) TestSnakeRotation() {
 			name:    "right",
 			command: func(snake *gamedata.Snake) { snake.Right() },
 			directions: []gamedata.Point{
-				{0, 1},
-				{-1, 0},
-				{0, -1},
-				{1, 0},
+				{X: 0, Y: 1},
+				{X: -1, Y: 0},
+				{X: 0, Y: -1},
+				{X: 1, Y: 0},
 			},
 		},
 		{

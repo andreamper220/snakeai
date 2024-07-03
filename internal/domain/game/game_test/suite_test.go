@@ -30,8 +30,14 @@ func (s *GameTestSuite) AddNewUser() *user.User {
 	u := &user.User{
 		Email: "test@test.com",
 	}
-	u.Password.Set("test_password")
-	storages.Storage.AddUser(u)
+	if err := u.Password.Set("test_password"); err != nil {
+		return nil
+	}
+	userId, err := storages.Storage.AddUser(u)
+	if err != nil {
+		return nil
+	}
+	u.Id = userId
 
 	return u
 }

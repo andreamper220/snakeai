@@ -87,6 +87,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired ti
 		http.Error(w, "password does not match", http.StatusUnauthorized)
 		return
 	}
+	if err != nil {
+		http.Error(w, "something happened decoding your password", http.StatusInternalServerError)
+		return
+	}
 
 	var buf bytes.Buffer
 	err = gob.NewEncoder(&buf).Encode(&u.Id)

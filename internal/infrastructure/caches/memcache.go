@@ -24,7 +24,8 @@ func (mc *MemCache) AddSession(sessionId, userId string, expired time.Duration) 
 func (mc *MemCache) DelSession(sessionId string) error {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
-	if _, ok := mc.sessions["sessionId_"+sessionId]; ok {
+	_, ok := mc.sessions["sessionId_"+sessionId]
+	if ok {
 		delete(mc.sessions, "sessionId_"+sessionId)
 	}
 	return nil

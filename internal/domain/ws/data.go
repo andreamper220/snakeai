@@ -15,7 +15,6 @@ var ErrConnectionNotFound = errors.New("connection not found")
 var Connections connections
 
 type connection struct {
-	mu              sync.Mutex
 	messagesChannel chan []byte
 	closeChannel    chan bool
 }
@@ -29,9 +28,8 @@ func (c *connections) Add(userId uuid.UUID, messagesChannel chan []byte, closeCh
 		c.conns = make(map[uuid.UUID]connection)
 	} else {
 		c.mu.RLock()
-		_, exists := c.conns[userId]
-		c.mu.RUnlock()
-		if exists {
+		defer c.mu.RUnlock()
+		if _, exists := c.conns[userId]; exists {
 			return
 		}
 	}
@@ -46,18 +44,16 @@ func (c *connections) Add(userId uuid.UUID, messagesChannel chan []byte, closeCh
 func (c *connections) Remove(userId uuid.UUID) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	conn, exists := c.conns[userId]
-	if exists {
+	if conn, exists := c.conns[userId]; exists {
 		conn.closeChannel <- true
 		delete(c.conns, userId)
 	}
 }
 func (c *connections) WriteJSON(userId uuid.UUID, data interface{}) error {
 	c.mu.RLock()
-	conn, exists := c.conns[userId]
-	c.mu.RUnlock()
+	defer c.mu.RUnlock()
 
-	if exists {
+	if conn, exists := c.conns[userId]; exists {
 		var buf bytes.Buffer
 		if err := json.NewEncoder(&buf).Encode(data); err != nil {
 			return err
@@ -70,10 +66,9 @@ func (c *connections) WriteJSON(userId uuid.UUID, data interface{}) error {
 }
 func (c *connections) Write(userId uuid.UUID, data []byte) error {
 	c.mu.RLock()
-	conn, exists := c.conns[userId]
-	c.mu.RUnlock()
+	defer c.mu.RUnlock()
 
-	if exists {
+	if conn, exists := c.conns[userId]; exists {
 		conn.messagesChannel <- data
 		return nil
 	}
