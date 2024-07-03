@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
       - name: test
         run: |
-          go test -v -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
+          go test -v -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
           cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "mocks" | grep -v "_mock" > $GITHUB_WORKSPACE/profile.cov
         env:
           TZ: "Europe/Moscow"

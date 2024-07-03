@@ -2,7 +2,7 @@ package validator
 
 import "regexp"
 
-var EmailRX = regexp.MustCompile("\\w+@\\w+\\.\\w+")
+var EmailRX = regexp.MustCompile(`\\w+@\\w+\\.\\w+`)
 
 type Validator struct {
 	Errors map[string]string
