@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"sync"
 
-	matchdata "snakeai/internal/domain/match/data"
-	"snakeai/internal/domain/user"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	"github.com/andreamper220/snakeai.git/internal/domain/user"
 )
 
 type MemStorage struct {

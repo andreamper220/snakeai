@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	gamejson "snakeai/internal/domain/game/json"
-	matchjson "snakeai/internal/domain/match/json"
+	gamejson "github.com/andreamper220/snakeai.git/internal/domain/game/json"
+	matchjson "github.com/andreamper220/snakeai.git/internal/domain/match/json"
 )
 
 func (s *HandlerTestSuite) TestPlayerRemoveAi() {

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 
-	"snakeai/internal/domain/user"
+	"github.com/andreamper220/snakeai.git/internal/domain/user"
 )
 
 const (

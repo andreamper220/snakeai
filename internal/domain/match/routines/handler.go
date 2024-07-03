@@ -3,11 +3,11 @@ package match_routines
 import (
 	"time"
 
-	gamedata "snakeai/internal/domain/game/data"
-	gameroutines "snakeai/internal/domain/game/routines"
-	matchdata "snakeai/internal/domain/match/data"
-	"snakeai/internal/domain/ws"
-	"snakeai/pkg/logger"
+	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
+	gameroutines "github.com/andreamper220/snakeai.git/internal/domain/game/routines"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	"github.com/andreamper220/snakeai.git/internal/domain/ws"
+	"github.com/andreamper220/snakeai.git/pkg/logger"
 )
 
 var PartiesChannel = make(chan *matchdata.Party, 100)

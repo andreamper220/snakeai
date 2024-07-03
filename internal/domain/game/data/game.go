@@ -4,10 +4,10 @@ import (
 	"github.com/google/uuid"
 	"sync"
 
-	"snakeai/internal/domain"
-	matchdata "snakeai/internal/domain/match/data"
-	"snakeai/internal/infrastructure/storages"
-	"snakeai/pkg/logger"
+	"github.com/andreamper220/snakeai.git/internal/domain"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	"github.com/andreamper220/snakeai.git/internal/infrastructure/storages"
+	"github.com/andreamper220/snakeai.git/pkg/logger"
 )
 
 var CurrentGames Games

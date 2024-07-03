@@ -5,19 +5,19 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"github.com/andreamper220/snakeai.git/internal/infrastructure/caches"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"net/http"
-	"snakeai/internal/infrastructure/caches"
 	"time"
 
-	"snakeai/internal/application/cookies"
-	gamedata "snakeai/internal/domain/game/data"
-	"snakeai/internal/domain/user"
-	"snakeai/internal/domain/ws"
-	"snakeai/internal/infrastructure/storages"
-	"snakeai/pkg/logger"
-	"snakeai/pkg/validator"
+	"github.com/andreamper220/snakeai.git/internal/application/cookies"
+	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
+	"github.com/andreamper220/snakeai.git/internal/domain/user"
+	"github.com/andreamper220/snakeai.git/internal/domain/ws"
+	"github.com/andreamper220/snakeai.git/internal/infrastructure/storages"
+	"github.com/andreamper220/snakeai.git/pkg/logger"
+	"github.com/andreamper220/snakeai.git/pkg/validator"
 )
 
 func UserRegister(w http.ResponseWriter, r *http.Request) {

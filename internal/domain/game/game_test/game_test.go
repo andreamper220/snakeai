@@ -1,9 +1,9 @@
 package game_test
 
 import (
+	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
 	"github.com/stretchr/testify/assert"
-	gamedata "snakeai/internal/domain/game/data"
-	matchdata "snakeai/internal/domain/match/data"
 	"testing"
 )
 

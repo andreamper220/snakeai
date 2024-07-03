@@ -9,8 +9,8 @@ import (
 	"github.com/pressly/goose/v3"
 	"time"
 
-	matchdata "snakeai/internal/domain/match/data"
-	"snakeai/internal/domain/user"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	"github.com/andreamper220/snakeai.git/internal/domain/user"
 )
 
 var (
@@ -142,9 +142,18 @@ func (dbs *DBStorage) IncreasePlayerScore(id uuid.UUID) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	tx, err := dbs.Connection.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	query := `UPDATE players SET skill = skill + 1 WHERE user_id = $1`
 	args := []any{id}
-	if _, err := dbs.Connection.ExecContext(ctx, query, args...); err != nil {
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		if e := tx.Rollback(); e != nil {
+			return e
+		}
+
 		return err
 	}
 	return nil

@@ -3,16 +3,16 @@ package post_handlers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/andreamper220/snakeai.git/pkg/logger"
 	"github.com/google/uuid"
 	"net/http"
-	"snakeai/pkg/logger"
 
-	gamedata "snakeai/internal/domain/game/data"
-	gamejson "snakeai/internal/domain/game/json"
-	matchdata "snakeai/internal/domain/match/data"
-	matchjson "snakeai/internal/domain/match/json"
-	matchroutines "snakeai/internal/domain/match/routines"
-	"snakeai/internal/infrastructure/storages"
+	gamedata "github.com/andreamper220/snakeai.git/internal/domain/game/data"
+	gamejson "github.com/andreamper220/snakeai.git/internal/domain/game/json"
+	matchdata "github.com/andreamper220/snakeai.git/internal/domain/match/data"
+	matchjson "github.com/andreamper220/snakeai.git/internal/domain/match/json"
+	matchroutines "github.com/andreamper220/snakeai.git/internal/domain/match/routines"
+	"github.com/andreamper220/snakeai.git/internal/infrastructure/storages"
 )
 
 func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {

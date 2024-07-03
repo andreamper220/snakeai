@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"sync"
 
-	"snakeai/pkg/logger"
+	"github.com/andreamper220/snakeai.git/pkg/logger"
 )
 
 var ErrConnectionNotFound = errors.New("connection not found")
