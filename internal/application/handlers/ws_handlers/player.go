@@ -21,7 +21,7 @@ func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) 
 
 	// TODO unbuffer ?
 	closeChannel := make(chan bool, 1)
-	messagesChannel := make(chan []byte, 100)
+	messagesChannel := make(chan []byte, 10)
 	go func(conn *websocket.Conn) {
 		defer close(closeChannel)
 		defer close(messagesChannel)

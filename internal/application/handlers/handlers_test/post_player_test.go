@@ -182,6 +182,7 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 				if tt.want.code == http.StatusOK {
 					// create party
 					ws1 := s.InitWebSocket(sessionCookie1)
+					s.T().Logf("%v", sessionCookie1)
 					go func(ws *websocket.Conn) {
 						defer ws.Close()
 						for {
@@ -213,6 +214,7 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 					s.Require().NoError(err)
 					// connect to party
 					ws2 := s.InitWebSocket(sessionCookie2)
+					s.T().Logf("%v", sessionCookie2)
 					go func(ws *websocket.Conn) {
 						defer ws.Close()
 						for {

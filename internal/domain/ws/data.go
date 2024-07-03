@@ -28,10 +28,11 @@ func (c *connections) Add(userId uuid.UUID, messagesChannel chan []byte, closeCh
 		c.conns = make(map[uuid.UUID]connection)
 	} else {
 		c.mu.RLock()
-		defer c.mu.RUnlock()
 		if _, exists := c.conns[userId]; exists {
+			c.mu.RUnlock()
 			return
 		}
+		c.mu.RUnlock()
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()

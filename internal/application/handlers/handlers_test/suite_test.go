@@ -70,6 +70,7 @@ func (s *HandlerTestSuite) Register(email, password string) uuid.UUID {
 	client := &http.Client{}
 	res, err := client.Do(req)
 	s.Require().NoError(err)
+	s.Require().Equal(http.StatusCreated, res.StatusCode)
 	s.Require().NoError(json.NewDecoder(res.Body).Decode(&resU))
 
 	return resU.Id
