@@ -9,7 +9,9 @@ Building AI for your Snake you can play with your friends and improve your algor
 </div>
 
 <div align="center">
-  [![Go Report Card](https://goreportcard.com/badge/github.com/andreamper220/snakeai)](https://goreportcard.com/report/github.com/andreamper220/snakeai)&nbsp;
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/andreamper220/snakeai)](https://goreportcard.com/report/github.com/andreamper220/snakeai)
+
 </div>
 
 ## What is it and how it works?
