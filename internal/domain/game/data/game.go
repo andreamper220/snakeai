@@ -150,17 +150,20 @@ func (g *Game) handleCollisions(snake *Snake) {
 		}
 	}
 	// another snake collision
-	for targetUserId, targetSnake := range g.Snakes.Data {
+	for targetUserId, targetSnake := range g.GetSnakes() {
 		if snake == targetSnake {
 			continue
 		}
+		targetSnake.RLock()
 		for _, part := range targetSnake.Body {
 			if head.X == part.X && head.Y == part.Y {
 				g.RemoveSnake(userId)
 				g.RemoveSnake(targetUserId)
+				targetSnake.RUnlock()
 				return
 			}
 		}
+		targetSnake.RUnlock()
 	}
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {

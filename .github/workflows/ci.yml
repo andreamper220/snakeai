@@ -12,27 +12,25 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-        id: go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.58
-  test:
-    name: test
+  tests:
+    name: tests
     runs-on: ubuntu-latest
     steps:
       - name: set up go 1.22
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-        id: go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
-      - name: test
+      - name: tests
         run: |
-          go test -v -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
+          go test -v -race -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
           cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "mocks" | grep -v "_mock" > $GITHUB_WORKSPACE/profile.cov
         env:
           TZ: "Europe/Moscow"
@@ -50,7 +48,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-        id: go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
       - name: build

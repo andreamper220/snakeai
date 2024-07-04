@@ -14,7 +14,7 @@ type Point struct {
 }
 
 type Snake struct {
-	mux         sync.Mutex
+	sync.RWMutex
 	Color       string
 	Body        []Point
 	Direction   Point
@@ -33,12 +33,6 @@ func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {
 		Direction: Point{X: xTo, Y: yTo},
 		AiFunc:    aiFunc,
 	}
-}
-func (s *Snake) Lock() {
-	s.mux.Lock()
-}
-func (s *Snake) Unlock() {
-	s.mux.Unlock()
 }
 func (s *Snake) Move() {
 	newHead := Point{
