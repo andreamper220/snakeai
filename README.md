@@ -28,17 +28,9 @@ You can:
 
 ### How does Match Making work?
 
-As a **HOST**:
-1. You **create** a new lobby
-2. Your data is starting to process by separate goroutine:
-   1. If you are a single player - you **create a party** with yourself and **start to play**
-   2. Else - you are waiting for another players, increasing your skill delta **twice** every **3 sec**
+Here is the full UML diagram to explain Match Making:
 
-As a **CLIENT**:
-1. You **request to connect** to any existing lobby
-2. Your data is starting to process by several separate goroutines:
-   1. If there is any party with `party.members.skill.avg = [ you.skill - you.delta; you.skill + you.delta ]`, then - you connect to that party
-   2. Else - you are waiting for some party, increasing your skill delta **twice** every **3 sec**
+![RLLHRZ~1](https://github.com/andreamper220/snakeai/assets/55195085/f807595d-7c9b-4d5b-bdaf-831112d04b11)
 
 ## What can I do while playing?
 
