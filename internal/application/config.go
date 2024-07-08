@@ -47,11 +47,21 @@ func ParseFlags() {
 	}
 	var sessExpSec int
 
-	flag.Var(&addr, "a", "server address host:port")
-	flag.StringVar(&Config.DatabaseDSN, "d", "", "database DSN")
-	flag.StringVar(&Config.RedisURL, "r", "", "redis URL")
-	flag.StringVar(&Config.SessionSecret, "s", "1234567887654321", "secret to session id encrypt")
-	flag.IntVar(&sessExpSec, "e", 1800, "session expiration seconds")
+	if flag.Lookup("a") == nil {
+		flag.Var(&addr, "a", "server address host:port")
+	}
+	if flag.Lookup("d") == nil {
+		flag.StringVar(&Config.DatabaseDSN, "d", "", "database DSN")
+	}
+	if flag.Lookup("r") == nil {
+		flag.StringVar(&Config.RedisURL, "r", "", "redis URL")
+	}
+	if flag.Lookup("s") == nil {
+		flag.StringVar(&Config.SessionSecret, "s", "1234567887654321", "secret to session id encrypt")
+	}
+	if flag.Lookup("e") == nil {
+		flag.IntVar(&sessExpSec, "e", 1800, "session expiration seconds")
+	}
 	flag.Parse()
 
 	var err error

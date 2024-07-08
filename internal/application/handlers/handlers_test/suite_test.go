@@ -9,15 +9,12 @@ import (
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/andreamper220/snakeai/internal/application"
-	gamedata "github.com/andreamper220/snakeai/internal/domain/game/data"
-	gameroutines "github.com/andreamper220/snakeai/internal/domain/game/routines"
-	matchroutines "github.com/andreamper220/snakeai/internal/domain/match/routines"
 	"github.com/andreamper220/snakeai/internal/domain/user"
-	"github.com/andreamper220/snakeai/pkg/logger"
 )
 
 type HandlerTestSuite struct {
@@ -26,28 +23,12 @@ type HandlerTestSuite struct {
 }
 
 func (s *HandlerTestSuite) SetupTest() {
-	application.Config.SessionSecret = "1234567887654321"
-	application.Config.SessionExpires = 1800
+	s.Require().NoError(os.Setenv("ADDRESS", "0.0.0.0:0"))
+	s.Require().NoError(os.Setenv("SESSION_SECRET", "1234567887654321"))
+	s.Require().NoError(os.Setenv("SESSION_EXPIRATION", "1800"))
+	application.ParseFlags()
 
-	if err := logger.Initialize(); err != nil {
-		s.Fail(err.Error())
-	}
-	if err := application.MakeStorage(); err != nil {
-		s.Fail(err.Error())
-	}
-	if err := application.MakeCache(); err != nil {
-		s.Fail(err.Error())
-	}
-	numMatchWorkers := 4
-	for w := 0; w < numMatchWorkers; w++ {
-		go matchroutines.MatchWorker()
-	}
-	numGameWorkers := 8
-	gamedata.CurrentGames.Games = make([]*gamedata.Game, 0)
-	for w := 0; w < numGameWorkers; w++ {
-		go gameroutines.GameWorker()
-	}
-	go matchroutines.HandlePartyMessages()
+	s.Require().NoError(application.Run(true))
 
 	s.Server = httptest.NewServer(application.MakeRouter())
 }

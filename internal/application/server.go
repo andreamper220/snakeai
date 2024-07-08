@@ -2,7 +2,6 @@ package application
 
 import (
 	"database/sql"
-	"errors"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
@@ -73,7 +72,7 @@ func MakeCache() error {
 	return nil
 }
 
-func Run() error {
+func Run(serverless bool) error {
 	if err := logger.Initialize(); err != nil {
 		return err
 	}
@@ -83,16 +82,15 @@ func Run() error {
 		return err
 	}
 	storage, ok := storages.Storage.(*storages.DBStorage)
-	if !ok {
-		return errors.New("DB storage is not created")
+	if ok {
+		defer storage.Connection.Close()
+		logger.Log.Info("db connection established")
 	}
-	defer storage.Connection.Close()
-	logger.Log.Info("db connection established")
 
 	if err := MakeCache(); err != nil {
 		return err
 	}
-	logger.Log.Info("redis connection established")
+	logger.Log.Info("cache established")
 
 	numMatchWorkers := 4
 	for w := 0; w < numMatchWorkers; w++ {
@@ -110,5 +108,8 @@ func Run() error {
 	go matchroutines.HandlePartyMessages()
 	logger.Log.Info("party messages goroutine started")
 
+	if serverless {
+		return nil
+	}
 	return http.ListenAndServe(Config.Address.String(), MakeRouter())
 }
