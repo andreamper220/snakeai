@@ -26,9 +26,9 @@ func (s *GameTestSuite) SetupTest() {
 
 }
 
-func (s *GameTestSuite) AddNewUser() *user.User {
+func (s *GameTestSuite) AddNewUser(email string) *user.User {
 	u := &user.User{
-		Email: "test@test.com",
+		Email: email,
 	}
 	if err := u.Password.Set("test_password"); err != nil {
 		return nil

@@ -2,6 +2,7 @@ package caches
 
 import (
 	"context"
+	"errors"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -20,5 +21,13 @@ func (rc *RedisCache) AddSession(sessionId, userId string, expired time.Duration
 }
 func (rc *RedisCache) DelSession(sessionId string) error {
 	_, err := rc.client.Del(context.Background(), "sessionID_"+sessionId).Result()
-	return err
+	if err != nil {
+		switch {
+		case errors.Is(err, redis.Nil):
+			return ErrNoSession
+		default:
+			return err
+		}
+	}
+	return nil
 }

@@ -34,61 +34,45 @@ func (s *HandlerTestSuite) TestUserRegister() {
 		want response
 	}{
 		{
-			request{
-				http.MethodPost,
-				incorrectEmail,
-				correctPassword,
-			},
-			response{
-				"",
-				http.StatusBadRequest,
-			},
+			request{http.MethodPost, "", ""},
+			response{"", http.StatusBadRequest},
 		},
 		{
-			request{
-				http.MethodPost,
-				correctEmail,
-				incorrectPassword,
-			},
-			response{
-				"",
-				http.StatusBadRequest,
-			},
+			request{http.MethodPost, incorrectEmail, correctPassword},
+			response{"", http.StatusBadRequest},
 		},
 		{
-			request{
-				http.MethodGet,
-				correctEmail,
-				correctPassword,
-			},
-			response{
-				"",
-				http.StatusMethodNotAllowed,
-			},
+			request{http.MethodPost, incorrectEmail, correctPassword},
+			response{"", http.StatusBadRequest},
 		},
 		{
-			request{
-				http.MethodPost,
-				correctEmail,
-				correctPassword,
-			},
-			response{
-				correctEmail,
-				http.StatusCreated,
-			},
+			request{http.MethodPost, correctEmail, incorrectPassword},
+			response{"", http.StatusBadRequest},
+		},
+		{
+			request{http.MethodGet, correctEmail, correctPassword},
+			response{"", http.StatusMethodNotAllowed},
+		},
+		{
+			request{http.MethodPost, correctEmail, correctPassword},
+			response{correctEmail, http.StatusCreated},
 		},
 	}
 
 	for _, tt := range tests {
 		s.Run(fmt.Sprintf("%s /register/ %s %s", tt.got.method, tt.got.email, tt.got.password),
 			func() {
+				var err error
 				var resU user.User
-				u := user.UserJson{
-					Email:    tt.got.email,
-					Password: tt.got.password,
+				var body []byte
+				if tt.got.email != "" && tt.got.password != "" {
+					u := user.UserJson{
+						Email:    tt.got.email,
+						Password: tt.got.password,
+					}
+					body, err = json.Marshal(u)
+					s.Require().NoError(err)
 				}
-				body, err := json.Marshal(u)
-				s.Require().NoError(err)
 
 				req, err := http.NewRequest(
 					tt.got.method,
@@ -107,6 +91,10 @@ func (s *HandlerTestSuite) TestUserRegister() {
 					s.Require().NoError(json.NewDecoder(res.Body).Decode(&resU))
 					s.Require().NotEqual(uuid.Nil, resU.Id)
 					s.Require().Equal(tt.got.email, resU.Email)
+					// repeat request
+					res, err = client.Do(req)
+					s.Require().NoError(err)
+					s.Equal(http.StatusBadRequest, res.StatusCode)
 				}
 
 				s.Require().NoError(res.Body.Close())
@@ -133,48 +121,24 @@ func (s *HandlerTestSuite) TestUserLogin() {
 		want response
 	}{
 		{
-			request{
-				http.MethodPost,
-				incorrectEmail,
-				correctPassword,
-			},
-			response{
-				"",
-				http.StatusNotFound,
-			},
+			request{http.MethodPost, "", ""},
+			response{"", http.StatusBadRequest},
 		},
 		{
-			request{
-				http.MethodPost,
-				correctEmail,
-				incorrectPassword,
-			},
-			response{
-				"",
-				http.StatusUnauthorized,
-			},
+			request{http.MethodPost, incorrectEmail, correctPassword},
+			response{"", http.StatusNotFound},
 		},
 		{
-			request{
-				http.MethodGet,
-				correctEmail,
-				correctPassword,
-			},
-			response{
-				"",
-				http.StatusMethodNotAllowed,
-			},
+			request{http.MethodPost, correctEmail, incorrectPassword},
+			response{"", http.StatusUnauthorized},
 		},
 		{
-			request{
-				http.MethodPost,
-				correctEmail,
-				correctPassword,
-			},
-			response{
-				correctEmail,
-				http.StatusOK,
-			},
+			request{http.MethodGet, correctEmail, correctPassword},
+			response{"", http.StatusMethodNotAllowed},
+		},
+		{
+			request{http.MethodPost, correctEmail, correctPassword},
+			response{correctEmail, http.StatusOK},
 		},
 	}
 
@@ -182,13 +146,17 @@ func (s *HandlerTestSuite) TestUserLogin() {
 	for _, tt := range tests {
 		s.Run(fmt.Sprintf("%s /login/ %s %s", tt.got.method, tt.got.email, tt.got.password),
 			func() {
+				var err error
 				var resU user.User
-				u := user.UserJson{
-					Email:    tt.got.email,
-					Password: tt.got.password,
+				var body []byte
+				if tt.got.email != "" && tt.got.password != "" {
+					u := user.UserJson{
+						Email:    tt.got.email,
+						Password: tt.got.password,
+					}
+					body, err = json.Marshal(u)
+					s.Require().NoError(err)
 				}
-				body, err := json.Marshal(u)
-				s.Require().NoError(err)
 
 				req, err := http.NewRequest(
 					tt.got.method,
@@ -238,20 +206,12 @@ func (s *HandlerTestSuite) TestUserLogout() {
 		want response
 	}{
 		{
-			request{
-				http.MethodGet,
-			},
-			response{
-				http.StatusMethodNotAllowed,
-			},
+			request{http.MethodGet},
+			response{http.StatusMethodNotAllowed},
 		},
 		{
-			request{
-				http.MethodPost,
-			},
-			response{
-				http.StatusOK,
-			},
+			request{http.MethodPost},
+			response{http.StatusOK},
 		},
 	}
 
@@ -283,6 +243,11 @@ func (s *HandlerTestSuite) TestUserLogout() {
 						}
 					}
 					s.Equal("", sessCookie.Value)
+
+					// resend logout (with no redis sessions)
+					res, err = client.Do(req)
+					s.Require().NoError(err)
+					s.Equal(http.StatusUnauthorized, res.StatusCode)
 				}
 
 				s.Require().NoError(res.Body.Close())

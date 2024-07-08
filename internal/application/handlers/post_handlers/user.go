@@ -7,7 +7,6 @@ import (
 	"errors"
 	"github.com/andreamper220/snakeai/internal/infrastructure/caches"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"net/http"
 	"time"
 
@@ -143,7 +142,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 
 	if err = caches.Cache.DelSession(buf.String()); err != nil {
 		switch {
-		case errors.Is(err, redis.Nil):
+		case errors.Is(err, caches.ErrNoSession):
 			http.Error(w, "you are not authorized to access this resource", http.StatusUnauthorized)
 		default:
 			http.Error(w, "something happened deleting your cache data", http.StatusInternalServerError)

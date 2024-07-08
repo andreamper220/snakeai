@@ -24,6 +24,10 @@ func (ms *MemStorage) AddUser(user *user.User) (uuid.UUID, error) {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
+	if existingUser, _ := ms.GetUserByEmail(user.Email); existingUser != nil {
+		return [16]byte{}, ErrDuplicateEmail
+	}
+
 	user.Id = uuid.New()
 	ms.users = append(ms.users, user)
 

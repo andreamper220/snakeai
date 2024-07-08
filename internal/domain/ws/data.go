@@ -65,13 +65,3 @@ func (c *connections) WriteJSON(userId uuid.UUID, data interface{}) error {
 	}
 	return ErrConnectionNotFound
 }
-func (c *connections) Write(userId uuid.UUID, data []byte) error {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	if conn, exists := c.conns[userId]; exists {
-		conn.messagesChannel <- data
-		return nil
-	}
-	return ErrConnectionNotFound
-}

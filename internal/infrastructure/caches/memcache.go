@@ -27,6 +27,7 @@ func (mc *MemCache) DelSession(sessionId string) error {
 	_, ok := mc.sessions["sessionId_"+sessionId]
 	if ok {
 		delete(mc.sessions, "sessionId_"+sessionId)
+		return nil
 	}
-	return nil
+	return ErrNoSession
 }

@@ -205,8 +205,42 @@ func (s *GameTestSuite) TestSnakeEdgeCollision() {
 	s.games.RemoveGame(g)
 }
 
+func (s *GameTestSuite) TestSnakeSnakeCollision() {
+	user1 := s.AddNewUser("test@test.com")
+	user2 := s.AddNewUser("test@test1.com")
+
+	pa := matchdata.NewParty()
+	g := gamedata.NewGame(gameWidth, gameHeight, &pa)
+	g.Food = &gamedata.Food{
+		Position: gamedata.Point{
+			X: 1,
+			Y: 1,
+		},
+	}
+	s.games.AddGame(g)
+
+	sn1 := gamedata.NewSnake(3, 3, 1, 0, []func(snake *gamedata.Snake){
+		func(snake *gamedata.Snake) { snake.Move() },
+	})
+	sn2 := gamedata.NewSnake(4, 3, -1, 0, []func(snake *gamedata.Snake){
+		func(snake *gamedata.Snake) { snake.Move() },
+	})
+	s.T().Log(user1.Id, user2.Id)
+	g.AddSnake(sn1, user1.Id)
+	g.AddSnake(sn2, user2.Id)
+	g.Update()
+	time.Sleep(100 * time.Millisecond)
+	g.RLock()
+	g.Snakes.RLock()
+	s.Assert().Equal(0, len(g.Snakes.Data))
+	g.Snakes.RUnlock()
+	g.RUnlock()
+
+	s.games.RemoveGame(g)
+}
+
 func (s *GameTestSuite) TestSnakeFoodEating() {
-	user := s.AddNewUser()
+	user := s.AddNewUser("test@test.com")
 
 	pa := matchdata.NewParty()
 	g := gamedata.NewGame(gameWidth, gameHeight, &pa)

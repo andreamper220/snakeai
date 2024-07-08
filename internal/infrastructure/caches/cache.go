@@ -1,8 +1,11 @@
 package caches
 
 import (
+	"errors"
 	"time"
 )
+
+var ErrNoSession = errors.New("no session found")
 
 var Cache CacheInterface
 

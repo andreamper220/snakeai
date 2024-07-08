@@ -13,11 +13,6 @@ import (
 	"github.com/andreamper220/snakeai/internal/domain/user"
 )
 
-var (
-	ErrDuplicateEmail = errors.New("duplicate email")
-	ErrRecordNotFound = errors.New("user not found")
-)
-
 //go:embed migrations/*.sql
 var migrations embed.FS
 

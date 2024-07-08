@@ -1,10 +1,16 @@
 package storages
 
 import (
+	"errors"
 	"github.com/google/uuid"
 
 	matchdata "github.com/andreamper220/snakeai/internal/domain/match/data"
 	"github.com/andreamper220/snakeai/internal/domain/user"
+)
+
+var (
+	ErrDuplicateEmail = errors.New("duplicate email")
+	ErrRecordNotFound = errors.New("user not found")
 )
 
 var Storage StorageInterface
