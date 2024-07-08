@@ -29,12 +29,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 
 	p, err := storages.Storage.GetPlayerById(userId)
 	if err != nil {
-		switch {
-		case errors.Is(err, storages.ErrRecordNotFound):
-			http.Error(w, err.Error(), http.StatusNotFound)
-		default:
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -45,12 +40,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	p, err := storages.Storage.GetPlayerById(userId)
 	if err != nil {
-		switch {
-		case errors.Is(err, storages.ErrRecordNotFound):
-			http.Error(w, err.Error(), http.StatusNotFound)
-		default:
-			http.Error(w, err.Error(), http.StatusBadRequest)
-		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

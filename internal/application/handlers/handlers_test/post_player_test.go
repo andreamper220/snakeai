@@ -38,22 +38,16 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 		want response
 	}{
 		{
-			request{
-				http.MethodGet,
-				0,
-			},
-			response{
-				http.StatusMethodNotAllowed,
-			},
+			request{http.MethodPost, 0},
+			response{http.StatusBadRequest},
 		},
 		{
-			request{
-				http.MethodPost,
-				1,
-			},
-			response{
-				http.StatusOK,
-			},
+			request{http.MethodGet, 1},
+			response{http.StatusMethodNotAllowed},
+		},
+		{
+			request{http.MethodPost, 1},
+			response{http.StatusOK},
 		},
 	}
 
@@ -63,13 +57,18 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 	for _, tt := range tests {
 		s.Run(fmt.Sprintf("%s /player/party/ %d", tt.got.method, tt.got.size),
 			func() {
-				pa := matchjson.PartyJson{
-					Size:   tt.got.size,
-					Width:  20,
-					Height: 20,
+				var err error
+				var body []byte
+				if tt.got.size > 0 {
+					pa := matchjson.PartyJson{
+						Size:   tt.got.size,
+						Width:  20,
+						Height: 20,
+					}
+					body, err = json.Marshal(pa)
+					s.Require().NoError(err)
 				}
-				body, err := json.Marshal(pa)
-				s.Require().NoError(err)
+
 				req, err := http.NewRequest(
 					tt.got.method,
 					fmt.Sprintf("%s/player/party", s.Server.URL),
@@ -127,7 +126,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 					}
 				}
 
-				if tt.got.size > 0 {
+				if res.StatusCode == http.StatusOK {
 					s.Require().NoError(ws.Close())
 				}
 				s.Require().NoError(res.Body.Close())
