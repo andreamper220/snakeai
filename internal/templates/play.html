@@ -239,9 +239,38 @@
         <br>
         Create your snake commands sequence:
         <div>
-            <input id="left_button" type="button" class="button" value="LEFT">`
+            <input id="if_button" type="button" class="button" value="IF">
+            <input id="then_button" type="button" class="button" value="THEN">
+            <input id="elseif_button" type="button" class="button" value="ELSE IF">
+            <input id="else_button" type="button" class="button" value="ELSE">
+            <input id="end_button" type="button" class="button" value="END">
+        </div>
+        <div>
+            <select id="obstacle_type">
+                <option value="edge" selected="selected">Edge</option>
+                <option value="snake">Snake</option>
+                <option value="food">Food</option>
+            </select>
+            <select id="obstacle_direction">
+                <option value="forward" selected="selected">Forward</option>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+            </select>
+            <select id="obstacle_condition">
+                <option value="==" selected="selected">==</option>
+                <option value="!=">!=</option>
+                <option value="<<"><</option>
+                <option value=">>">></option>
+                <option value="<="><=</option>
+                <option value=">=">>=</option>
+            </select>
+            <input id="obstacle_distance" type="number" placeholder="Enter distance to obstacle">
+            <input id="add_condition_button" type="button" class="button" value="ADD CONDITION">
+        </div>
+        <div>
+            <input id="left_button" type="button" class="button" value="LEFT">
             <input id="right_button" type="button" class="button" value="RIGHT">
-            <input id="move_button" type="button" class="button" value="MOVE FORWARD">`
+            <input id="move_button" type="button" class="button" value="MOVE FORWARD">
         </div>
         <br>
         <input id="cmd_list" type="text">
@@ -388,14 +417,35 @@
             $('.loader').show();
         });
 
+        $("#if_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + "if(");
+        });
+        $("#then_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + ")then{");
+        });
+        $("#elseif_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + "}elseif(");
+        });
+        $("#else_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + "}else{");
+        });
+        $("#end_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + "}");
+        });
+        $("#add_condition_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val()
+                + $("#obstacle_type").val() + "_" + $("#obstacle_direction").val()
+                + $("#obstacle_condition").val() + $("#obstacle_distance").val()
+            );
+        });
         $("#right_button").on('click', function(){
-            $("#cmd_list").val($("#cmd_list").val() + "right,");
+            $("#cmd_list").val($("#cmd_list").val() + "right;");
         });
         $("#left_button").on('click', function(){
-            $("#cmd_list").val($("#cmd_list").val() + "left,");
+            $("#cmd_list").val($("#cmd_list").val() + "left;");
         });
         $("#move_button").on('click', function(){
-            $("#cmd_list").val($("#cmd_list").val() + "move,");
+            $("#cmd_list").val($("#cmd_list").val() + "move;");
         });
         $("#add_snake_button").on('click', function(){
             let direction = $("input[type='radio'][name='direction']:checked").val(),

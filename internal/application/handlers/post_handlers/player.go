@@ -54,7 +54,13 @@ func PlayerRunAi(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 		return
 	}
 
-	snake := gamedata.NewSnake(aiJson.X, aiJson.Y, aiJson.XTo, aiJson.YTo, gamedata.GenerateAiFunctions(aiJson.Ai))
+	ai, err := gamedata.GenerateAiFunctions(aiJson.Ai)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	snake := gamedata.NewSnake(aiJson.X, aiJson.Y, aiJson.XTo, aiJson.YTo, ai)
 out:
 	for _, g := range gamedata.CurrentGames.Games {
 		for _, p := range g.Party.Players {

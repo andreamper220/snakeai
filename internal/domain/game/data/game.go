@@ -77,9 +77,12 @@ func NewGame(width, height int, party *matchdata.Party) *Game {
 	return game
 }
 func (g *Game) AddSnake(snake *Snake, userId uuid.UUID) {
+	g.RLock()
+	snake.Game = g
+	g.RUnlock()
 	g.Snakes.Lock()
-	defer g.Snakes.Unlock()
 	g.Snakes.Data[userId] = snake
+	g.Snakes.Unlock()
 }
 func (g *Game) RemoveSnake(userId uuid.UUID) {
 	g.Snakes.Lock()

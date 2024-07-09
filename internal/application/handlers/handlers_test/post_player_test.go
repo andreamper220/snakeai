@@ -405,7 +405,7 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 					Y:   5,
 					XTo: 1,
 					YTo: 0,
-					Ai:  "move,right,left,move,",
+					Ai:  "move;right;left;move;",
 				},
 			},
 			response{

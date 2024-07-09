@@ -103,7 +103,7 @@ func (s *HandlerTestSuite) TestPlayerRemoveAi() {
 						Y:   5,
 						XTo: 1,
 						YTo: 0,
-						Ai:  "move,move,move,",
+						Ai:  "move;move;move;",
 					})
 					s.Require().NoError(err)
 					req, err = http.NewRequest(

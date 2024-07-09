@@ -21,6 +21,7 @@ type Snake struct {
 	GrowCounter int
 	AiFunc      []func(snake *Snake)
 	AIFuncNum   int
+	Game        *Game
 }
 
 func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {
@@ -33,6 +34,11 @@ func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {
 		Direction: Point{X: xTo, Y: yTo},
 		AiFunc:    aiFunc,
 	}
+}
+func (s *Snake) GetGame() *Game {
+	s.Game.RLock()
+	defer s.Game.RUnlock()
+	return s.Game
 }
 func (s *Snake) Move() {
 	newHead := Point{
@@ -75,5 +81,11 @@ func (s *Snake) Right() {
 		} else {
 			s.Direction = Point{X: 0, Y: -1}
 		}
+	}
+}
+func (s *Snake) DoIf(condition AiCondition, actionsLength int) {
+	// if condition true - to run next action
+	if !condition.Check(s, s.GetGame()) {
+		s.AIFuncNum += actionsLength
 	}
 }
