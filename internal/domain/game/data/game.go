@@ -113,27 +113,29 @@ func (g *Game) Update() {
 	for w := 0; w < numSnakeWorkers; w++ {
 		go func() {
 			for s := range snakeJobsChannel {
-				s.Lock()
-				s.AiFunc[s.AIFuncNum](s)
-				g.handleCollisions(s)
-				s.AIFuncNum++
-				if len(s.AiFunc) == s.AIFuncNum {
-					s.AIFuncNum = 0
+				//s.Lock()
+				s.AiFunc[s.AiFuncNum](s)
+				s.AiFuncNum++
+				if len(s.AiFunc) == s.AiFuncNum {
+					s.AiFuncNum = 0
 				}
-				s.Unlock()
+				//s.Unlock()
+				g.handleCollisions(s)
 			}
 		}()
 	}
 
 	snakes := g.GetSnakes()
-	g.Snakes.RLock()
 	for _, snake := range snakes {
+		snake.RLock()
 		snakeJobsChannel <- snake
+		snake.RUnlock()
 	}
-	g.Snakes.RUnlock()
 	close(snakeJobsChannel)
 }
 func (g *Game) handleCollisions(snake *Snake) {
+	snake.RLock()
+	defer snake.RUnlock()
 	userId := g.GetUserIdBySnake(snake)
 	if userId == uuid.Nil {
 		return

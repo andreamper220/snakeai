@@ -15,13 +15,14 @@ type Point struct {
 
 type Snake struct {
 	sync.RWMutex
-	Color       string
-	Body        []Point
-	Direction   Point
-	GrowCounter int
-	AiFunc      []func(snake *Snake)
-	AIFuncNum   int
-	Game        *Game
+	Color         string
+	Body          []Point
+	Direction     Point
+	GrowCounter   int
+	AiFunc        []func(snake *Snake)
+	AiFuncNum     int
+	AiFuncNumPrev int
+	Game          *Game
 }
 
 func NewSnake(x, y, xTo, yTo int, aiFunc []func(snake *Snake)) *Snake {
@@ -41,6 +42,7 @@ func (s *Snake) GetGame() *Game {
 	return s.Game
 }
 func (s *Snake) Move() {
+	s.AiFuncNumPrev = s.AiFuncNum
 	newHead := Point{
 		X: s.Body[0].X + s.Direction.X,
 		Y: s.Body[0].Y + s.Direction.Y,
@@ -54,6 +56,7 @@ func (s *Snake) Move() {
 	}
 }
 func (s *Snake) Left() {
+	s.AiFuncNumPrev = s.AiFuncNum
 	if s.Direction.X == 0 {
 		if s.Direction.Y == 1 {
 			s.Direction = Point{X: 1, Y: 0}
@@ -69,6 +72,7 @@ func (s *Snake) Left() {
 	}
 }
 func (s *Snake) Right() {
+	s.AiFuncNumPrev = s.AiFuncNum
 	if s.Direction.X == 0 {
 		if s.Direction.Y == 1 {
 			s.Direction = Point{X: -1, Y: 0}
@@ -84,8 +88,27 @@ func (s *Snake) Right() {
 	}
 }
 func (s *Snake) DoIf(condition AiCondition, actionsLength int) {
-	// if condition true - to run next action
+	// if condition true - to run next action (by default)
+	// else - rewind to end of condition actions
+	s.AiFuncNumPrev = s.AiFuncNum
 	if !condition.Check(s, s.GetGame()) {
-		s.AIFuncNum += actionsLength
+		s.AiFuncNum += actionsLength
+	}
+}
+func (s *Snake) DoElseIf(condition AiCondition, actionsLength int) {
+	// if only from previous if / elseif
+	if s.AiFuncNum-s.AiFuncNumPrev == 0 {
+		s.AiFuncNumPrev = s.AiFuncNum
+		s.AiFuncNum += actionsLength
+	} else {
+		s.DoIf(condition, actionsLength)
+	}
+}
+func (s *Snake) DoElse(actionsLength int) {
+	// if only from previous if / elseif
+	// else - rewind to end of condition actions
+	if s.AiFuncNum-s.AiFuncNumPrev == 0 {
+		s.AiFuncNumPrev = s.AiFuncNum
+		s.AiFuncNum += actionsLength
 	}
 }
