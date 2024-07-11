@@ -1,6 +1,7 @@
 package data
 
 import (
+	"errors"
 	"github.com/andreamper220/snakeai/pkg/logger"
 	"regexp"
 	"strconv"
@@ -15,12 +16,12 @@ const (
 	ObstacleSnake = obstacleType("snake")
 )
 
-type obstacleDirection string
+type ObstacleDirection string
 
 const (
-	Forward = obstacleDirection("forward")
-	Left    = obstacleDirection("left")
-	Right   = obstacleDirection("right")
+	Forward = ObstacleDirection("forward")
+	Left    = ObstacleDirection("left")
+	Right   = ObstacleDirection("right")
 )
 
 type obstacleCondition string
@@ -35,19 +36,19 @@ const (
 )
 
 type AiCondition struct {
-	obstacleType      obstacleType
-	obstacleDirection obstacleDirection
-	obstacleCondition obstacleCondition
-	obstacleDistance  int
+	ObstacleType      obstacleType
+	ObstacleDirection ObstacleDirection
+	ObstacleCondition obstacleCondition
+	ObstacleDistance  int
 }
 
 func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 	head := snake.Body[0]
 	direction := snake.Direction
 	var obstaclePoints = make([]Point, 0)
-	switch condition.obstacleType {
+	switch condition.ObstacleType {
 	case ObstacleEdge:
-		switch condition.obstacleDirection {
+		switch condition.ObstacleDirection {
 		case Forward:
 			if direction.X == 0 {
 				if direction.Y == 1 {
@@ -95,15 +96,15 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 		x := game.Food.Position.X
 		y := game.Food.Position.Y
 		if direction.X == 0 {
-			if condition.obstacleDirection == Left {
+			if condition.ObstacleDirection == Left {
 				x++
-			} else if condition.obstacleDirection == Right {
+			} else if condition.ObstacleDirection == Right {
 				x--
 			}
 		} else {
-			if condition.obstacleDirection == Left {
+			if condition.ObstacleDirection == Left {
 				y--
-			} else if condition.obstacleDirection == Right {
+			} else if condition.ObstacleDirection == Right {
 				y++
 			}
 		}
@@ -116,15 +117,15 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 					x := bodyPoint.X
 					y := bodyPoint.Y
 					if direction.X == 0 {
-						if condition.obstacleDirection == Left {
+						if condition.ObstacleDirection == Left {
 							x++
-						} else if condition.obstacleDirection == Right {
+						} else if condition.ObstacleDirection == Right {
 							x--
 						}
 					} else {
-						if condition.obstacleDirection == Left {
+						if condition.ObstacleDirection == Left {
 							y--
-						} else if condition.obstacleDirection == Right {
+						} else if condition.ObstacleDirection == Right {
 							y++
 						}
 					}
@@ -144,72 +145,72 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 }
 
 func (condition AiCondition) checkConditionDirection(direction, obstaclePoint, head Point) bool {
-	switch condition.obstacleDirection {
+	switch condition.ObstacleDirection {
 	case Forward:
 		logger.Log.Infof("%v %v", obstaclePoint, head)
-		switch condition.obstacleCondition {
+		switch condition.ObstacleCondition {
 		case Equal:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) == condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) == condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) == condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) == condition.ObstacleDistance) {
 				return true
 			}
 		case NotEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) != condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) != condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) != condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) != condition.ObstacleDistance) {
 				return true
 			}
 		case LessThan:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) < condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) < condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) < condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) < condition.ObstacleDistance) {
 				return true
 			}
 		case GreaterThan:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) > condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) > condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) > condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) > condition.ObstacleDistance) {
 				return true
 			}
 		case LessOrEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) <= condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) <= condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) <= condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) <= condition.ObstacleDistance) {
 				return true
 			}
 		case GreaterOrEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) >= condition.obstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) >= condition.obstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) >= condition.ObstacleDistance) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) >= condition.ObstacleDistance) {
 				return true
 			}
 		}
 	case Right, Left:
 		logger.Log.Infof("%v %v", obstaclePoint, head)
-		switch condition.obstacleCondition {
+		switch condition.ObstacleCondition {
 		case Equal:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) == condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) == condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) == condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) == condition.ObstacleDistance) {
 				return true
 			}
 		case NotEqual:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) != condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) != condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) != condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) != condition.ObstacleDistance) {
 				return true
 			}
 		case LessThan:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) < condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) < condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) < condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) < condition.ObstacleDistance) {
 				return true
 			}
 		case GreaterThan:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) > condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) > condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) > condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) > condition.ObstacleDistance) {
 				return true
 			}
 		case LessOrEqual:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) <= condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) <= condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) <= condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) <= condition.ObstacleDistance) {
 				return true
 			}
 		case GreaterOrEqual:
-			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) >= condition.obstacleDistance) ||
-				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) >= condition.obstacleDistance) {
+			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) >= condition.ObstacleDistance) ||
+				(direction.X == 0 && obstaclePoint.Y == head.Y && abs(obstaclePoint.X-head.X) >= condition.ObstacleDistance) {
 				return true
 			}
 		}
@@ -218,10 +219,17 @@ func (condition AiCondition) checkConditionDirection(direction, obstaclePoint, h
 }
 
 func GenerateAiFunctions(ai string) ([]func(snake *Snake), error) {
-	// TODO add 400 bad request
-	aiFunctions := processAi(ai)
+	if strings.Count(ai, "(") != strings.Count(ai, ")") {
+		return nil, errors.New("parenthesis count does not match")
+	}
+	if strings.Count(ai, "{") != strings.Count(ai, "}") {
+		return nil, errors.New("curly brackets count does not match")
+	}
+	if strings.Count(ai, ")then{") != strings.Count(ai, "(") {
+		return nil, errors.New("some conditions do not have actions")
+	}
 
-	return aiFunctions, nil
+	return processAi(ai), nil
 }
 
 func processAi(ai string) []func(snake *Snake) {
@@ -281,7 +289,8 @@ func processConditions(ai string) []func(snake *Snake) {
 		}
 		// process 'else'
 		if strings.Index(aiNotProcessedString, "else") == 0 {
-			actions, aiNotProcessedString = processConditionActionsString(aiNotProcessedString)
+			actions, notProcessedString := processConditionActionsString(aiNotProcessedString)
+			aiNotProcessedString = notProcessedString
 			if len(actions) > 0 {
 				aiFunctionsElse := []func(snake *Snake){
 					func(snake *Snake) { snake.DoElse(len(actions)) },
@@ -312,10 +321,10 @@ func processConditionString(ai string) (AiCondition, []func(snake *Snake), strin
 			obstacleDistance, _ := strconv.Atoi(conditionStringsInner[1])
 
 			condition = AiCondition{
-				obstacleType:      obstacleType(conditionStrings[0]),
-				obstacleDirection: obstacleDirection(conditionStringsInner[0]),
-				obstacleCondition: obstacleCondition(conditionSeparator),
-				obstacleDistance:  obstacleDistance,
+				ObstacleType:      obstacleType(conditionStrings[0]),
+				ObstacleDirection: ObstacleDirection(conditionStringsInner[0]),
+				ObstacleCondition: obstacleCondition(conditionSeparator),
+				ObstacleDistance:  obstacleDistance,
 			}
 		}
 		actions, aiNotProcessedString = processConditionActionsString(ai)
