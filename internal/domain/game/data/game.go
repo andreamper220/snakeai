@@ -113,14 +113,16 @@ func (g *Game) Update() {
 	for w := 0; w < numSnakeWorkers; w++ {
 		go func() {
 			for s := range snakeJobsChannel {
-				//s.Lock()
-				s.AiFunc[s.AiFuncNum](s)
-				s.AiFuncNum++
-				if len(s.AiFunc) == s.AiFuncNum {
-					s.AiFuncNum = 0
+				if len(s.AiFunc) > 0 {
+					//s.Lock()
+					s.AiFunc[s.AiFuncNum](s)
+					s.AiFuncNum++
+					if len(s.AiFunc) == s.AiFuncNum {
+						s.AiFuncNum = 0
+					}
+					//s.Unlock()
+					g.handleCollisions(s)
 				}
-				//s.Unlock()
-				g.handleCollisions(s)
 			}
 		}()
 	}

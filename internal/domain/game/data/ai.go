@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-type obstacleType string
+type ObstacleType string
 
 const (
-	ObstacleEdge  = obstacleType("edge")
-	ObstacleFood  = obstacleType("food")
-	ObstacleSnake = obstacleType("snake")
+	ObstacleEdge  = ObstacleType("edge")
+	ObstacleFood  = ObstacleType("food")
+	ObstacleSnake = ObstacleType("snake")
 )
 
 type ObstacleDirection string
@@ -24,21 +24,21 @@ const (
 	Right   = ObstacleDirection("right")
 )
 
-type obstacleCondition string
+type ObstacleCondition string
 
 const (
-	Equal          = obstacleCondition("==")
-	NotEqual       = obstacleCondition("!=")
-	LessThan       = obstacleCondition("<<")
-	GreaterThan    = obstacleCondition(">>")
-	LessOrEqual    = obstacleCondition("<=")
-	GreaterOrEqual = obstacleCondition(">=")
+	Equal          = ObstacleCondition("==")
+	NotEqual       = ObstacleCondition("!=")
+	LessThan       = ObstacleCondition("<<")
+	GreaterThan    = ObstacleCondition(">>")
+	LessOrEqual    = ObstacleCondition("<=")
+	GreaterOrEqual = ObstacleCondition(">=")
 )
 
 type AiCondition struct {
-	ObstacleType      obstacleType
+	ObstacleType      ObstacleType
 	ObstacleDirection ObstacleDirection
-	ObstacleCondition obstacleCondition
+	ObstacleCondition ObstacleCondition
 	ObstacleDistance  int
 }
 
@@ -97,15 +97,35 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 		y := game.Food.Position.Y
 		if direction.X == 0 {
 			if condition.ObstacleDirection == Left {
-				x++
+				if direction.Y == 1 {
+					x--
+				} else {
+					x++
+				}
 			} else if condition.ObstacleDirection == Right {
-				x--
+				if direction.Y == 1 {
+					x++
+				} else {
+					x--
+				}
+			} else {
+				y -= direction.Y
 			}
 		} else {
 			if condition.ObstacleDirection == Left {
-				y--
+				if direction.X == 1 {
+					y++
+				} else {
+					y--
+				}
 			} else if condition.ObstacleDirection == Right {
-				y++
+				if direction.X == 1 {
+					y--
+				} else {
+					y++
+				}
+			} else {
+				x -= direction.X
 			}
 		}
 		obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
@@ -118,15 +138,35 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 					y := bodyPoint.Y
 					if direction.X == 0 {
 						if condition.ObstacleDirection == Left {
-							x++
+							if direction.Y == 1 {
+								x--
+							} else {
+								x++
+							}
 						} else if condition.ObstacleDirection == Right {
-							x--
+							if direction.Y == 1 {
+								x++
+							} else {
+								x--
+							}
+						} else {
+							y -= direction.Y
 						}
 					} else {
 						if condition.ObstacleDirection == Left {
-							y--
+							if direction.X == 1 {
+								y++
+							} else {
+								y--
+							}
 						} else if condition.ObstacleDirection == Right {
-							y++
+							if direction.X == 1 {
+								y--
+							} else {
+								y++
+							}
+						} else {
+							x -= direction.X
 						}
 					}
 					obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
@@ -269,33 +309,33 @@ func processActions(ai string) []func(snake *Snake) {
 func processConditions(ai string) []func(snake *Snake) {
 	aiFunctions := make([]func(snake *Snake), 0)
 	// process 'if'
-	ifCondition, actions, aiNotProcessedString := processConditionString(ai)
-	if len(actions) > 0 {
+	ifCondition, ifActions, aiNotProcessedString := processConditionString(ai)
+	if len(ifActions) > 0 {
 		aiFunctionsIf := []func(snake *Snake){
-			func(snake *Snake) { snake.DoIf(ifCondition, len(actions)) },
+			func(snake *Snake) { snake.DoIf(ifCondition, len(ifActions)) },
 		}
-		aiFunctionsIf = append(aiFunctionsIf, actions...)
+		aiFunctionsIf = append(aiFunctionsIf, ifActions...)
 		// process 'elseif'
 		if strings.Index(aiNotProcessedString, "elseif") == 0 {
-			elseIfCondition, actions, notProcessedString := processConditionString(aiNotProcessedString)
+			elseIfCondition, elseIfActions, notProcessedString := processConditionString(aiNotProcessedString)
 			aiNotProcessedString = notProcessedString
-			if len(actions) > 0 {
+			if len(elseIfActions) > 0 {
 				aiFunctionsElseIf := []func(snake *Snake){
-					func(snake *Snake) { snake.DoElseIf(elseIfCondition, len(actions)) },
+					func(snake *Snake) { snake.DoElseIf(elseIfCondition, len(elseIfActions)) },
 				}
-				aiFunctionsElseIf = append(aiFunctionsElseIf, actions...)
+				aiFunctionsElseIf = append(aiFunctionsElseIf, elseIfActions...)
 				aiFunctionsIf = append(aiFunctionsIf, aiFunctionsElseIf...)
 			}
 		}
 		// process 'else'
 		if strings.Index(aiNotProcessedString, "else") == 0 {
-			actions, notProcessedString := processConditionActionsString(aiNotProcessedString)
+			elseActions, notProcessedString := processConditionActionsString(aiNotProcessedString)
 			aiNotProcessedString = notProcessedString
-			if len(actions) > 0 {
+			if len(elseActions) > 0 {
 				aiFunctionsElse := []func(snake *Snake){
-					func(snake *Snake) { snake.DoElse(len(actions)) },
+					func(snake *Snake) { snake.DoElse(len(elseActions)) },
 				}
-				aiFunctionsElse = append(aiFunctionsElse, actions...)
+				aiFunctionsElse = append(aiFunctionsElse, elseActions...)
 				aiFunctionsIf = append(aiFunctionsIf, aiFunctionsElse...)
 			}
 		}
@@ -321,9 +361,9 @@ func processConditionString(ai string) (AiCondition, []func(snake *Snake), strin
 			obstacleDistance, _ := strconv.Atoi(conditionStringsInner[1])
 
 			condition = AiCondition{
-				ObstacleType:      obstacleType(conditionStrings[0]),
+				ObstacleType:      ObstacleType(conditionStrings[0]),
 				ObstacleDirection: ObstacleDirection(conditionStringsInner[0]),
-				ObstacleCondition: obstacleCondition(conditionSeparator),
+				ObstacleCondition: ObstacleCondition(conditionSeparator),
 				ObstacleDistance:  obstacleDistance,
 			}
 		}

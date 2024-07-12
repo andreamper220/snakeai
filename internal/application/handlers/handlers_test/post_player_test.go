@@ -405,7 +405,22 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 					Y:   5,
 					XTo: 1,
 					YTo: 0,
-					Ai:  "move;right;left;move;",
+					Ai:  "move;if(snake_left==1){move;}elseif(",
+				},
+			},
+			response{
+				http.StatusBadRequest,
+			},
+		},
+		{
+			request{
+				http.MethodPost,
+				gamejson.AiJson{
+					X:   5,
+					Y:   5,
+					XTo: 1,
+					YTo: 0,
+					Ai:  "move;right;left;move;if(snake_left==1)then{move;}elseif(snake_right>>2)then{right;move;}else{left;move;}",
 				},
 			},
 			response{

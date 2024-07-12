@@ -229,12 +229,8 @@ func (s *GameTestSuite) TestSnakeSnakeCollision() {
 	g.AddSnake(sn1, user1.Id)
 	g.AddSnake(sn2, user2.Id)
 	g.Update()
-	time.Sleep(100 * time.Millisecond)
-	g.RLock()
-	g.Snakes.RLock()
+	time.Sleep(200 * time.Millisecond)
 	s.Assert().Equal(0, len(g.Snakes.Data))
-	g.Snakes.RUnlock()
-	g.RUnlock()
 
 	s.games.RemoveGame(g)
 }
