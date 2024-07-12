@@ -329,8 +329,7 @@ func processConditions(ai string) []func(snake *Snake) {
 		}
 		// process 'else'
 		if strings.Index(aiNotProcessedString, "else") == 0 {
-			elseActions, notProcessedString := processConditionActionsString(aiNotProcessedString)
-			aiNotProcessedString = notProcessedString
+			elseActions, _ := processConditionActionsString(aiNotProcessedString)
 			if len(elseActions) > 0 {
 				aiFunctionsElse := []func(snake *Snake){
 					func(snake *Snake) { snake.DoElse(len(elseActions)) },
