@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./env.d/docker.d/Dockerfile
+      target: server
     user: "root:root"
     ports: ["8081:8080"]
     depends_on:
