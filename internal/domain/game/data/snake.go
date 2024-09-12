@@ -97,8 +97,8 @@ func (s *Snake) DoIf(condition AiCondition, actionsLength int) {
 }
 func (s *Snake) DoElseIf(condition AiCondition, actionsLength int) {
 	// if only from previous if / elseif
-	if s.AiFuncNum-s.AiFuncNumPrev == 0 {
-		s.AiFuncNumPrev = s.AiFuncNum
+	if s.AiFuncNum-s.AiFuncNumPrev <= 1 {
+		s.AiFuncNumPrev += actionsLength + 1
 		s.AiFuncNum += actionsLength
 	} else {
 		s.DoIf(condition, actionsLength)
@@ -107,7 +107,7 @@ func (s *Snake) DoElseIf(condition AiCondition, actionsLength int) {
 func (s *Snake) DoElse(actionsLength int) {
 	// if only from previous if / elseif
 	// else - rewind to end of condition actions
-	if s.AiFuncNum-s.AiFuncNumPrev == 0 {
+	if s.AiFuncNum-s.AiFuncNumPrev <= 1 {
 		s.AiFuncNumPrev = s.AiFuncNum
 		s.AiFuncNum += actionsLength
 	}

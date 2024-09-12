@@ -190,33 +190,33 @@ func (condition AiCondition) checkConditionDirection(direction, obstaclePoint, h
 		logger.Log.Infof("%v %v", obstaclePoint, head)
 		switch condition.ObstacleCondition {
 		case Equal:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) == condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) == condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) == condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) == condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		case NotEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) != condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) != condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) != condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) != condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		case LessThan:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) < condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) < condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) < condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) < condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		case GreaterThan:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) > condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) > condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) > condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) > condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		case LessOrEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) <= condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) <= condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) <= condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) <= condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		case GreaterOrEqual:
-			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) >= condition.ObstacleDistance) ||
-				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) >= condition.ObstacleDistance) {
+			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) >= condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
+				(direction.X == 0 && abs(obstaclePoint.Y-head.Y) >= condition.ObstacleDistance && obstaclePoint.X == head.X) {
 				return true
 			}
 		}
@@ -316,15 +316,18 @@ func processConditions(ai string) []func(snake *Snake) {
 		}
 		aiFunctionsIf = append(aiFunctionsIf, ifActions...)
 		// process 'elseif'
-		if strings.Index(aiNotProcessedString, "elseif") == 0 {
-			elseIfCondition, elseIfActions, notProcessedString := processConditionString(aiNotProcessedString)
-			aiNotProcessedString = notProcessedString
-			if len(elseIfActions) > 0 {
-				aiFunctionsElseIf := []func(snake *Snake){
-					func(snake *Snake) { snake.DoElseIf(elseIfCondition, len(elseIfActions)) },
+		var aiFunctionsElseIf []func(snake *Snake)
+		for i := 0; i <= strings.Count(aiNotProcessedString, "elseif"); i++ {
+			if strings.Index(aiNotProcessedString, "elseif") == 0 {
+				elseIfCondition, elseIfActions, notProcessedString := processConditionString(aiNotProcessedString)
+				aiNotProcessedString = notProcessedString
+				if len(elseIfActions) > 0 {
+					aiFunctionsElseIf = append(aiFunctionsElseIf, func(snake *Snake) {
+						snake.DoElseIf(elseIfCondition, len(elseIfActions))
+					})
+					aiFunctionsElseIf = append(aiFunctionsElseIf, elseIfActions...)
+					aiFunctionsIf = append(aiFunctionsIf, aiFunctionsElseIf...)
 				}
-				aiFunctionsElseIf = append(aiFunctionsElseIf, elseIfActions...)
-				aiFunctionsIf = append(aiFunctionsIf, aiFunctionsElseIf...)
 			}
 		}
 		// process 'else'
