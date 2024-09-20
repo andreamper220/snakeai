@@ -44,6 +44,7 @@ type Party struct {
 	Size     int       `json:"size"`
 	Width    int       `json:"-"`
 	Height   int       `json:"-"`
+	MapId    string    `json:"map_id"`
 }
 
 func NewParty() Party {

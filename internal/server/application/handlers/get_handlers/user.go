@@ -9,7 +9,7 @@ import (
 
 func UserAuth(w http.ResponseWriter, r *http.Request) {
 	dir, _ := filepath.Split(os.Args[0])
-	filePath := filepath.Join(dir, "internal/game/templates/auth.html")
+	filePath := filepath.Join(dir, "internal/server/templates/auth.html")
 	tmpl, err := template.ParseFiles(filePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

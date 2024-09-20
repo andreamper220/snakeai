@@ -2,9 +2,10 @@ package storages
 
 import (
 	"errors"
+	"github.com/google/uuid"
+
 	matchdata "github.com/andreamper220/snakeai/internal/server/domain/match/data"
 	"github.com/andreamper220/snakeai/internal/server/domain/user"
-	"github.com/google/uuid"
 )
 
 var (

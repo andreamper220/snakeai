@@ -20,6 +20,7 @@ func HandlePartyMessages() {
 		g := gamedata.NewGame(pa.Width, pa.Height, pa)
 		gamedata.CurrentGames.AddGame(g)
 		go gameroutines.HandleGames(g, *time.NewTicker(time.Duration(1) * time.Second))
+		g.Update()
 
 		for _, p := range pa.Players {
 			err := ws.Connections.WriteJSON(p.Id, pa)

@@ -121,6 +121,10 @@
         .form input.button:hover{
             background: #006653;
         }
+        .form input.button:disabled{
+            background: #99a1a0;
+            cursor: auto;
+        }
         .connect{
             font-size: 17px;
             text-align: center;
@@ -193,10 +197,12 @@
         <header id="mm_form_header">Match Making</header>
         <div class="loader"></div>
         <div id="mm_form_container">
+            <div id="mm_alert" class="alert"></div>
             <form id="mm_form">
-                <input type="number" name="size" placeholder="Enter party size (1-10 players)" min="1" max="10" required>
-                <input type="number" name="width" placeholder="Enter field width (5-30 cells)" min="5" max="30" required>
-                <input type="number" name="height" placeholder="Enter field height (5-30 cells)" min="5" max="30" required>
+                <input id="size" type="number" name="size" placeholder="Enter party size (1-10 players)" min="1" max="10" required>
+                <input id="width" type="number" name="width" placeholder="Enter field width (5-30 cells)" min="5" max="30" required>
+                <input id="height" type="number" name="height" placeholder="Enter field height (5-30 cells)" min="5" max="30" required>
+                <input id="editor_button" type="button" class="button" value="Create custom map">
                 <input id="mm_button" type="button" class="button" value="Create party">
             </form>
             <div class="connect">
@@ -317,7 +323,8 @@
     let canvas = document.getElementById('game_area'),
         context = canvas.getContext('2d'),
         boxSize = 40,
-        width = 0, height = 0;
+        width = 0, height = 0,
+        inGame = false;
 
     var socket = new WebSocket("ws://" + location.host + "/ws");
     socket.onmessage = function(event) {
@@ -337,9 +344,18 @@
                     playersHtml += "ID: " + player.id + " Name: " + player.name + " Skill: " + player.skill + "<br>";
                 })
                 $('.players').html(playersHtml);
+
+                inGame = true;
             }
             // it's field update
             if (Object.hasOwn(obj, 'id') && Object.hasOwn(obj, 'width') && Object.hasOwn(obj, 'height')) {
+                if (!inGame) {
+                    $.ajax({
+                        url: '/player/party/restore',
+                        type : "POST"
+                    })
+                }
+
                 width = obj.width;
                 height = obj.height;
 
@@ -360,6 +376,18 @@
                 context.stroke();
 
                 $('.box').css('background-color', 'white');
+
+                if (Object.hasOwn(obj, 'obstacles')) {
+                    context.fillStyle = "black";
+                    for (let i = 0; i < obj.obstacles.length; i++) {
+                        context.fillRect(
+                            obj.obstacles[i][0] * boxSize + p + 1,
+                            obj.obstacles[i][1] * boxSize + p + 1,
+                            boxSize - 1,
+                            boxSize - 1
+                        );
+                    }
+                }
                 for (const [userId, snake] of Object.entries(obj.snakes.data)) {
                     if (userId === playerId) {
                         if (snake.body.length === 1) {
@@ -397,16 +425,39 @@
         console.log("ws conn with error");
     };
 
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
     $(document).ready(function(){
+        let mapId = getParameterByName('mapId');
+        if (mapId !== "") {
+            $('#conn_form_container').fadeOut();
+            $('.loader').show();
+        }
+
+        $("#editor_button").on('click', function (){
+            location.href = "/editor";
+        });
         $("#mm_button").on('click', function(){
             $.ajax({
                 url: '/player/party',
                 type : "POST",
                 contentType: "application/json; charset=utf-8",
-                data : getFormJsonData($("#mm_form"))
+                data : getFormJsonData($("#mm_form")),
+                success : function() {
+                    // TODO change title to PARTY title (not CONNECT)
+                    $('#mm_form_container').fadeOut();
+                    $('.loader').show();
+                    $("#mm_alert").html("");
+                },
+                error: function(xhr) {
+                    $("#mm_alert").html(xhr.responseText + "<br>");
+                }
             })
-            $('#mm_form_container').fadeOut();
-            $('.loader').show();
         });
         $("#connect_button").on('click', function(){
             $.ajax({

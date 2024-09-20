@@ -1,8 +1,11 @@
 package data
 
 import (
+	"context"
 	"errors"
+	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
 	"github.com/andreamper220/snakeai/pkg/logger"
+	pb "github.com/andreamper220/snakeai/proto"
 	"regexp"
 	"strconv"
 	"strings"
@@ -48,6 +51,50 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 	var obstaclePoints = make([]Point, 0)
 	switch condition.ObstacleType {
 	case ObstacleEdge:
+		gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
+			Id: game.Party.MapId,
+		})
+		if err == nil {
+			requestObstacles := gameMap.Map.Struct.Obstacles
+			for i := 0; i < len(requestObstacles); i++ {
+				x := requestObstacles[i].Cx + 1
+				y := requestObstacles[i].Cy + 1
+				if direction.X == 0 {
+					if condition.ObstacleDirection == Left {
+						if direction.Y == 1 {
+							x--
+						} else {
+							x++
+						}
+					} else if condition.ObstacleDirection == Right {
+						if direction.Y == 1 {
+							x++
+						} else {
+							x--
+						}
+					} else {
+						y -= int32(direction.Y)
+					}
+				} else {
+					if condition.ObstacleDirection == Left {
+						if direction.X == 1 {
+							y++
+						} else {
+							y--
+						}
+					} else if condition.ObstacleDirection == Right {
+						if direction.X == 1 {
+							y--
+						} else {
+							y++
+						}
+					} else {
+						x -= int32(direction.X)
+					}
+				}
+				obstaclePoints = append(obstaclePoints, Point{X: int(x), Y: int(y)})
+			}
+		}
 		switch condition.ObstacleDirection {
 		case Forward:
 			if direction.X == 0 {

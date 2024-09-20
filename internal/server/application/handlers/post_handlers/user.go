@@ -7,7 +7,7 @@ import (
 	"errors"
 	"github.com/andreamper220/snakeai/internal/server/application/cookies"
 	gamedata "github.com/andreamper220/snakeai/internal/server/domain/game/data"
-	user2 "github.com/andreamper220/snakeai/internal/server/domain/user"
+	"github.com/andreamper220/snakeai/internal/server/domain/user"
 	"github.com/andreamper220/snakeai/internal/server/domain/ws"
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/caches"
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/storages"
@@ -20,13 +20,13 @@ import (
 )
 
 func UserRegister(w http.ResponseWriter, r *http.Request) {
-	var userJson user2.UserJson
+	var userJson user.UserJson
 	if err := json.NewDecoder(r.Body).Decode(&userJson); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	u := &user2.User{
+	u := &user.User{
 		Email: userJson.Email,
 	}
 	if err := u.Password.Set(userJson.Password); err != nil {
@@ -35,7 +35,7 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := validator.New()
-	user2.ValidateUser(v, u)
+	user.ValidateUser(v, u)
 	if !v.IsValid() {
 		http.Error(w, v.String(), http.StatusBadRequest)
 		return
@@ -64,7 +64,7 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request, secret []byte, expired time.Duration) {
-	var userJson user2.UserJson
+	var userJson user.UserJson
 	if err := json.NewDecoder(r.Body).Decode(&userJson); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

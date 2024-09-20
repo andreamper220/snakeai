@@ -1,9 +1,12 @@
 package data
 
 import (
+	"context"
 	"github.com/andreamper220/snakeai/internal/server/domain"
 	matchdata "github.com/andreamper220/snakeai/internal/server/domain/match/data"
+	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/storages"
+	pb "github.com/andreamper220/snakeai/proto"
 	"github.com/google/uuid"
 	"sync"
 
@@ -149,6 +152,18 @@ func (g *Game) handleCollisions(snake *Snake) {
 		g.RemoveSnake(userId)
 		return
 	}
+	// edge custom walls collision
+	gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
+		Id: g.Party.MapId,
+	})
+	if err == nil {
+		for _, obstacle := range gameMap.Map.Struct.Obstacles {
+			if head.X-1 == int(obstacle.Cx) && head.Y-1 == int(obstacle.Cy) {
+				g.RemoveSnake(userId)
+				return
+			}
+		}
+	}
 	// self-collision
 	for _, part := range snake.Body[1:] {
 		if head.X == part.X && head.Y == part.Y {
@@ -199,4 +214,15 @@ out:
 			}
 		}
 	}
+}
+
+func GetGameByPlayer(userId uuid.UUID) *Game {
+	for _, g := range CurrentGames.Games {
+		for _, p := range g.Party.Players {
+			if p.Id == userId {
+				return g
+			}
+		}
+	}
+	return nil
 }

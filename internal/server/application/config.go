@@ -20,12 +20,12 @@ var Config struct {
 }
 
 type address struct {
-	host string
-	port int
+	Host string
+	Port int
 }
 
 func (a *address) String() string {
-	return a.host + ":" + strconv.Itoa(a.port)
+	return a.Host + ":" + strconv.Itoa(a.Port)
 }
 
 func (a *address) Set(value string) error {
@@ -34,16 +34,16 @@ func (a *address) Set(value string) error {
 	if len(serverAddress) != 2 {
 		return errors.New("need 2 arguments: host and port")
 	}
-	a.host = serverAddress[0]
-	a.port, err = strconv.Atoi(serverAddress[1])
+	a.Host = serverAddress[0]
+	a.Port, err = strconv.Atoi(serverAddress[1])
 
 	return err
 }
 
 func ParseFlags() {
 	addr := address{
-		host: "0.0.0.0",
-		port: 8080,
+		Host: "0.0.0.0",
+		Port: 8080,
 	}
 	var sessExpSec int
 

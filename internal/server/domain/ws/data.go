@@ -23,17 +23,24 @@ type connections struct {
 	conns map[uuid.UUID]connection
 }
 
-func (c *connections) Add(userId uuid.UUID, messagesChannel chan []byte, closeChannel chan bool) {
+func (c *connections) Exists(userId uuid.UUID) bool {
 	if c.conns == nil {
 		c.conns = make(map[uuid.UUID]connection)
 	} else {
 		c.mu.RLock()
 		if _, exists := c.conns[userId]; exists {
 			c.mu.RUnlock()
-			return
+			return true
 		}
 		c.mu.RUnlock()
 	}
+	return false
+}
+func (c *connections) Add(userId uuid.UUID, messagesChannel chan []byte, closeChannel chan bool) {
+	if c.Exists(userId) {
+		return
+	}
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.conns[userId] = connection{
@@ -60,6 +67,7 @@ func (c *connections) WriteJSON(userId uuid.UUID, data interface{}) error {
 			return err
 		}
 		mess := buf.Bytes()
+		logger.Log.Info(string(mess))
 		conn.messagesChannel <- mess
 		return nil
 	}

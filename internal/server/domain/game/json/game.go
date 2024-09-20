@@ -9,10 +9,11 @@ type SnakesJson struct {
 }
 
 type GameJson struct {
-	Id     string            `json:"id"`
-	Width  int               `json:"width"`
-	Height int               `json:"height"`
-	Snakes SnakesJson        `json:"snakes"`
-	Scores map[uuid.UUID]int `json:"scores"`
-	Food   FoodJson          `json:"food"`
+	Id        string            `json:"id"`
+	Width     int               `json:"width"`
+	Height    int               `json:"height"`
+	Obstacles [][2]int32        `json:"obstacles"`
+	Snakes    SnakesJson        `json:"snakes"`
+	Scores    map[uuid.UUID]int `json:"scores"`
+	Food      FoodJson          `json:"food"`
 }

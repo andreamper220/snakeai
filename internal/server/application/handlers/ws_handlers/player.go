@@ -9,6 +9,10 @@ import (
 )
 
 func PlayerConnection(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+	if ws.Connections.Exists(userId) {
+		ws.Connections.Remove(userId)
+	}
+
 	upgrader := websocket.Upgrader{}
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 

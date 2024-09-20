@@ -10,6 +10,15 @@ services:
     ports: ["8081:8080"]
     depends_on:
       - snake_db
+      - snake_map_editor
+
+  snake_map_editor:
+    container_name: snake-map-editor
+    build:
+      context: .
+      dockerfile: ./env.d/docker.d/Dockerfile
+      target: editor
+    user: "root:root"
 
   snake_db:
     image: postgres:15-alpine
