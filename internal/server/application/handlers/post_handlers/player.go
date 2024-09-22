@@ -148,3 +148,35 @@ out:
 		}
 	}
 }
+
+func PlayerMapCheck(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+	var partyJson matchjson.PartyJson
+	if err := json.NewDecoder(r.Body).Decode(&partyJson); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	obstacles := make([]*pb.Obstacle, len(partyJson.Obstacles))
+	if len(partyJson.Obstacles) > 0 {
+		for i := 0; i < len(obstacles); i++ {
+			obstacle := &pb.Obstacle{
+				Cx: partyJson.Obstacles[i][0],
+				Cy: partyJson.Obstacles[i][1],
+			}
+			obstacles[i] = obstacle
+		}
+	}
+
+	requestMap := &pb.CheckMapRequest{
+		Struct: &pb.MapStruct{
+			Width:     int32(partyJson.Width),
+			Height:    int32(partyJson.Height),
+			Obstacles: obstacles,
+		},
+	}
+	_, err := grpcclients.EditorClient.CheckMap(context.Background(), requestMap)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}

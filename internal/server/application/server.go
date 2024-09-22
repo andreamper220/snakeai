@@ -36,6 +36,7 @@ func MakeRouter() *chi.Mux {
 	r.Get(`/match`, middlewares.WithAuthenticate(get_handlers.PlayerMatch, []byte(Config.SessionSecret)))
 	r.Get(`/editor`, middlewares.WithAuthenticate(get_handlers.PlayerMapEditor, []byte(Config.SessionSecret)))
 	r.Post(`/logout`, middlewares.WithAuthenticate(post_handlers.UserLogout, []byte(Config.SessionSecret)))
+	r.Post(`/editor/check`, middlewares.WithAuthenticate(post_handlers.PlayerMapCheck, []byte(Config.SessionSecret)))
 	r.Post(`/player/party`, middlewares.WithAuthenticate(post_handlers.PlayerPartyEnqueue, []byte(Config.SessionSecret)))
 	r.Post(`/player/party/restore`, middlewares.WithAuthenticate(post_handlers.PlayerPartyRestore, []byte(Config.SessionSecret)))
 	r.Post(`/player`, middlewares.WithAuthenticate(post_handlers.PlayerEnqueue, []byte(Config.SessionSecret)))
@@ -80,7 +81,7 @@ func MakeCache() error {
 
 func ConnectEditor() (*grpc.ClientConn, error) {
 	// TODO refactor (service name and port)
-	conn, err := grpc.Dial("snake-map-editor:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("snake-map-editor:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

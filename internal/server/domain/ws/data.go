@@ -67,7 +67,6 @@ func (c *connections) WriteJSON(userId uuid.UUID, data interface{}) error {
 			return err
 		}
 		mess := buf.Bytes()
-		logger.Log.Info(string(mess))
 		conn.messagesChannel <- mess
 		return nil
 	}

@@ -73,7 +73,7 @@ func NewGame(width, height int, party *matchdata.Party) *Game {
 			Data: make(map[uuid.UUID]*Snake),
 		},
 		Scores: make(map[uuid.UUID]int),
-		Food:   NewFood(width, height),
+		Food:   NewFood(width, height, party.MapId),
 		Done:   make(chan bool),
 	}
 
@@ -152,15 +152,17 @@ func (g *Game) handleCollisions(snake *Snake) {
 		g.RemoveSnake(userId)
 		return
 	}
-	// edge custom walls collision
-	gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
-		Id: g.Party.MapId,
-	})
-	if err == nil {
-		for _, obstacle := range gameMap.Map.Struct.Obstacles {
-			if head.X-1 == int(obstacle.Cx) && head.Y-1 == int(obstacle.Cy) {
-				g.RemoveSnake(userId)
-				return
+	if g.Party.MapId != "" {
+		// edge custom walls collision
+		gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
+			Id: g.Party.MapId,
+		})
+		if err == nil {
+			for _, obstacle := range gameMap.Map.Struct.Obstacles {
+				if head.X-1 == int(obstacle.Cx) && head.Y-1 == int(obstacle.Cy) {
+					g.RemoveSnake(userId)
+					return
+				}
 			}
 		}
 	}
@@ -189,7 +191,7 @@ func (g *Game) handleCollisions(snake *Snake) {
 	}
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {
-		g.Food = NewFood(g.Width, g.Height)
+		g.Food = NewFood(g.Width, g.Height, g.Party.MapId)
 		snake.GrowCounter += 1
 		g.Scores[userId]++
 		if err := storages.Storage.IncreasePlayerScore(userId); err != nil {

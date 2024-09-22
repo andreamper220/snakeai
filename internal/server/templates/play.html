@@ -377,7 +377,7 @@
 
                 $('.box').css('background-color', 'white');
 
-                if (Object.hasOwn(obj, 'obstacles')) {
+                if (Object.hasOwn(obj, 'obstacles') && obj.obstacles !== null) {
                     context.fillStyle = "black";
                     for (let i = 0; i < obj.obstacles.length; i++) {
                         context.fillRect(

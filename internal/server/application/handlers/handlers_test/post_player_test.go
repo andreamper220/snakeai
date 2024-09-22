@@ -46,7 +46,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 		},
 		{
 			request{http.MethodPost, 1},
-			response{http.StatusOK},
+			response{http.StatusCreated},
 		},
 	}
 

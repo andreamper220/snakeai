@@ -106,6 +106,13 @@
             color: #ff1d1d;
         }
 
+        .success{
+            display: flex;
+            justify-content: flex-end;
+            font-size: 15px;
+            color: #00c424;
+        }
+
         #canvas {
             background: #fff;
         }
@@ -121,6 +128,8 @@
     </style>
 </head>
 <body>
+<div id="common_alert" class="alert"></div>
+<div id="common_success" class="success">Start to create your map...</div>
 <div class="topnav">
     <a href="#home">Home</a>
     <a href="#about">About</a>
@@ -134,7 +143,6 @@
         <button id="logout_button" type="button">Logout</button>
     </div>
 </div>
-<div id="logout_alert" class="alert"></div>
 <div class="editor">
     <canvas width="2000" height="2000" id="editor_area"></canvas>
 </div>
@@ -280,7 +288,34 @@
             } else {
                 $("#mm_button").attr("disabled", "disabled");
             }
-        })
+        });
+        $("#check_button").on('click', function(){
+            let requestObstacles = [];
+            for (let i = 0; i < obstacles.length; i++) {
+                requestObstacles.push([
+                    (obstacles[i][0] - p) / boxSize,
+                    (obstacles[i][1] - p) / boxSize
+                ]);
+            }
+            $.ajax({
+                url: '/editor/check',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    width: Number($("#width").val()),
+                    height: Number($("#height").val()),
+                    obstacles: requestObstacles
+                }),
+                success : function() {
+                    $("#common_alert").html("");
+                    $("#common_success").html("Map is correct!");
+                },
+                error: function(xhr) {
+                    $("#common_alert").html(xhr.responseText + "<br>");
+                    $("#common_success").html("");
+                }
+            })
+        });
         $("#mm_button").on('click', function(){
             let requestObstacles = [];
             for (let i = 0; i < obstacles.length; i++) {
@@ -300,26 +335,29 @@
                     obstacles: requestObstacles
                 }),
                 success : function(data) {
-                    $("#mm_alert").html("");
+                    $("#common_alert").html("");
+                    $("#common_success").html("redirecting...");
                     location.href = "/match?mapId=" + data.map_id;
                 },
                 error: function(xhr) {
-                    $("#mm_alert").html(xhr.responseText + "<br>");
+                    $("#common_alert").html(xhr.responseText + "<br>");
+                    $("#common_success").html("");
                 }
             })
         });
 
         $("#logout_button").on('click', function(){
-            socket.close()
             $.ajax({
                 url: '/logout',
                 type : "POST",
                 success : function() {
-                    $("#logout_alert").html("");
+                    $("#common_alert").html("");
+                    $("#common_success").html("logged out");
                     location.href = "/";
                 },
                 error: function(xhr) {
-                    $("#logout_alert").html(xhr.responseText);
+                    $("#common_alert").html(xhr.responseText);
+                    $("#common_success").html("");
                 }
             })
         });
