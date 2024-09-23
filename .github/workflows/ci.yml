@@ -52,5 +52,5 @@ jobs:
         uses: actions/checkout@v4
       - name: build
         run: |
-          go build server ./cmd/server
-          go build editor ./cmd/editor
+          go build -o server ./cmd/server
+          go build -o editor ./cmd/editor
