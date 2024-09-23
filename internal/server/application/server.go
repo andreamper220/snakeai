@@ -80,8 +80,7 @@ func MakeCache() error {
 }
 
 func ConnectEditor() (*grpc.ClientConn, error) {
-	// TODO refactor (service name and port)
-	conn, err := grpc.NewClient("snake-map-editor:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(Config.EditorServerAddress.String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

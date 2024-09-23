@@ -4,16 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	application2 "github.com/andreamper220/snakeai/internal/server/application"
-	user2 "github.com/andreamper220/snakeai/internal/server/domain/user"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
+
+	editorserver "github.com/andreamper220/snakeai/internal/editor/application"
+	"github.com/andreamper220/snakeai/internal/server/application"
+	"github.com/andreamper220/snakeai/internal/server/domain/user"
 )
 
 type HandlerTestSuite struct {
@@ -22,19 +27,25 @@ type HandlerTestSuite struct {
 }
 
 func (s *HandlerTestSuite) SetupTest() {
+	editorPort := rand.Intn(50) + 50000
 	s.Require().NoError(os.Setenv("ADDRESS", "0.0.0.0:0"))
 	s.Require().NoError(os.Setenv("SESSION_SECRET", "1234567887654321"))
 	s.Require().NoError(os.Setenv("SESSION_EXPIRATION", "1800"))
-	application2.ParseFlags()
+	s.Require().NoError(os.Setenv("EDITOR_ADDRESS", "0.0.0.0:"+strconv.Itoa(editorPort)))
+	application.ParseFlags()
 
-	s.Require().NoError(application2.Run(true))
+	go func() {
+		s.Require().NoError(editorserver.Run(editorPort))
+	}()
+	time.Sleep(500 * time.Millisecond)
 
-	s.Server = httptest.NewServer(application2.MakeRouter())
+	s.Require().NoError(application.Run(true))
+	s.Server = httptest.NewServer(application.MakeRouter())
 }
 
 func (s *HandlerTestSuite) Register(email, password string) uuid.UUID {
-	var resU user2.User
-	u := user2.UserJson{
+	var resU user.User
+	u := user.UserJson{
 		Email:    email,
 		Password: password,
 	}
@@ -57,7 +68,7 @@ func (s *HandlerTestSuite) Register(email, password string) uuid.UUID {
 }
 
 func (s *HandlerTestSuite) Login(email, password string) *http.Cookie {
-	u := user2.UserJson{
+	u := user.UserJson{
 		Email:    email,
 		Password: password,
 	}

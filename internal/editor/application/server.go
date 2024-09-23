@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net"
+	"strconv"
 
 	"github.com/andreamper220/snakeai/internal/editor/domain"
 	"github.com/andreamper220/snakeai/internal/editor/infrastructure/storages"
@@ -103,7 +104,7 @@ func MakeStorage() error {
 	return nil
 }
 
-func Run() error {
+func Run(port int) error {
 	if err := logger.Initialize(); err != nil {
 		return err
 	}
@@ -113,8 +114,7 @@ func Run() error {
 		return err
 	}
 
-	// TODO refactor (port)
-	listen, err := net.Listen("tcp", ":50051")
+	listen, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		logger.Log.Fatal(err)
 	}

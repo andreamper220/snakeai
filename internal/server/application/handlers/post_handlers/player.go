@@ -52,6 +52,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 		}
 		responseMap, err := grpcclients.EditorClient.SaveMap(context.Background(), requestMap)
 		if err != nil {
+			logger.Log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

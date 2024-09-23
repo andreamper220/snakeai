@@ -12,11 +12,12 @@ import (
 )
 
 var Config struct {
-	Address        address
-	DatabaseDSN    string
-	RedisURL       string
-	SessionSecret  string
-	SessionExpires time.Duration
+	Address             address
+	DatabaseDSN         string
+	RedisURL            string
+	SessionSecret       string
+	SessionExpires      time.Duration
+	EditorServerAddress address
 }
 
 type address struct {
@@ -44,6 +45,10 @@ func ParseFlags() {
 	addr := address{
 		Host: "0.0.0.0",
 		Port: 8080,
+	}
+	editorServerAddr := address{
+		Host: "snake-map-editor",
+		Port: 50051,
 	}
 	var sessExpSec int
 
@@ -80,6 +85,9 @@ func ParseFlags() {
 	if sessionExpiresEnv := os.Getenv("SESSION_EXPIRATION"); sessionExpiresEnv != "" {
 		sessExpSec, err = strconv.Atoi(sessionExpiresEnv)
 	}
+	if editorAddrEnv := os.Getenv("EDITOR_ADDRESS"); editorAddrEnv != "" {
+		err = editorServerAddr.Set(editorAddrEnv)
+	}
 
 	if err != nil {
 		logger.Log.Fatal(err.Error())
@@ -87,4 +95,5 @@ func ParseFlags() {
 
 	Config.Address = addr
 	Config.SessionExpires = time.Duration(sessExpSec) * time.Second
+	Config.EditorServerAddress = editorServerAddr
 }

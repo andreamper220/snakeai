@@ -24,8 +24,11 @@ const (
 
 func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 	type request struct {
-		method string
-		size   int
+		method    string
+		size      int
+		width     int
+		height    int
+		obstacles [][2]int32
 	}
 
 	type response struct {
@@ -37,15 +40,23 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 		want response
 	}{
 		{
-			request{http.MethodPost, 0},
+			request{http.MethodPost, 0, 20, 20, nil},
 			response{http.StatusBadRequest},
 		},
 		{
-			request{http.MethodGet, 1},
+			request{http.MethodPost, 1, 4, 20, nil},
+			response{http.StatusBadRequest},
+		},
+		{
+			request{http.MethodPost, 1, 20, 100, nil},
+			response{http.StatusBadRequest},
+		},
+		{
+			request{http.MethodGet, 1, 20, 20, nil},
 			response{http.StatusMethodNotAllowed},
 		},
 		{
-			request{http.MethodPost, 1},
+			request{http.MethodPost, 1, 20, 20, [][2]int32{{3, 3}}},
 			response{http.StatusCreated},
 		},
 	}
@@ -60,9 +71,10 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 				var body []byte
 				if tt.got.size > 0 {
 					pa := matchjson.PartyJson{
-						Size:   tt.got.size,
-						Width:  20,
-						Height: 20,
+						Size:      tt.got.size,
+						Width:     tt.got.width,
+						Height:    tt.got.height,
+						Obstacles: tt.got.obstacles,
 					}
 					body, err = json.Marshal(pa)
 					s.Require().NoError(err)
@@ -77,7 +89,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 				req.AddCookie(sessionCookie1)
 
 				var ws *websocket.Conn
-				if tt.want.code == http.StatusOK {
+				if tt.want.code == http.StatusCreated {
 					u := "ws" + strings.TrimPrefix(s.Server.URL, "http") + "/ws"
 					header := http.Header{}
 					header.Add("Cookie", sessionCookie1.String())
@@ -91,7 +103,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 				s.Require().NoError(err)
 
 				s.Equal(tt.want.code, res.StatusCode)
-				if res.StatusCode == http.StatusOK {
+				if res.StatusCode == http.StatusCreated {
 					ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 					defer cancel()
 				out:
@@ -125,12 +137,107 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 					}
 				}
 
-				if res.StatusCode == http.StatusOK {
+				if res.StatusCode == http.StatusCreated {
 					s.Require().NoError(ws.Close())
 				}
 				s.Require().NoError(res.Body.Close())
 			})
 	}
+	s.Logout(sessionCookie1)
+
+	defer s.Server.Close()
+}
+
+func (s *HandlerTestSuite) TestPlayerPartyRestore() {
+	userId1 := s.Register(correctEmail1, correctPassword1)
+	sessionCookie1 := s.Login(correctEmail1, correctPassword1)
+
+	s.Run("POST /player/party/restore NOT_FOUND",
+		func() {
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/player/party/restore", s.Server.URL),
+				nil,
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+			client := &http.Client{}
+			res, err := client.Do(req)
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusNotFound, res.StatusCode)
+		})
+
+	s.Run("POST /player/party/restore OK",
+		func() {
+			pa := matchjson.PartyJson{
+				Size:   1,
+				Width:  5,
+				Height: 5,
+			}
+			body, err := json.Marshal(pa)
+			s.Require().NoError(err)
+
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/player/party", s.Server.URL),
+				bytes.NewBuffer(body),
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+
+			u := "ws" + strings.TrimPrefix(s.Server.URL, "http") + "/ws"
+			header := http.Header{}
+			header.Add("Cookie", sessionCookie1.String())
+			ws, _, err := websocket.DefaultDialer.Dial(u, header)
+			if err != nil {
+				s.Fail(err.Error())
+			}
+
+			client := &http.Client{}
+			res, err := client.Do(req)
+			s.Require().NoError(err)
+
+			s.Equal(http.StatusCreated, res.StatusCode)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+		out:
+			for {
+				select {
+				case <-ctx.Done():
+					s.Fail("timeout waiting for websocket message")
+					break out
+				default:
+					_, p, err := ws.ReadMessage()
+					s.Require().NoError(err)
+					var pa matchdata.Party
+					s.Require().NoError(json.NewDecoder(bytes.NewBuffer(p)).Decode(&pa))
+					partyUserId := uuid.Nil
+					for _, pl := range pa.Players {
+						if pl.Id == userId1 {
+							partyUserId = pl.Id
+							break
+						}
+					}
+					s.Equal(userId1, partyUserId)
+					break out
+				}
+			}
+
+			req, err = http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/player/party/restore", s.Server.URL),
+				bytes.NewBuffer(body),
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+			res, err = client.Do(req)
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusOK, res.StatusCode)
+
+			s.Require().NoError(ws.Close())
+			s.Require().NoError(res.Body.Close())
+		})
+
 	s.Logout(sessionCookie1)
 
 	defer s.Server.Close()
@@ -371,6 +478,55 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 	s.Logout(sessionCookie2)
 
 	defer s.Server.Close()
+}
+
+func (s *HandlerTestSuite) TestPlayerMapCheck() {
+	s.Register(correctEmail1, correctPassword1)
+	sessionCookie1 := s.Login(correctEmail1, correctPassword1)
+
+	s.Run("POST /editor/check OK",
+		func() {
+			pa := matchjson.PartyJson{
+				Width:     20,
+				Height:    20,
+				Obstacles: [][2]int32{{3, 3}},
+			}
+			body, err := json.Marshal(pa)
+			s.Require().NoError(err)
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/editor/check", s.Server.URL),
+				bytes.NewBuffer(body),
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+			client := &http.Client{}
+			res, err := client.Do(req)
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusOK, res.StatusCode)
+		})
+
+	s.Run("POST /editor/check BAD_REQUEST",
+		func() {
+			pa := matchjson.PartyJson{
+				Width:     4,
+				Height:    100,
+				Obstacles: [][2]int32{{3, 3}},
+			}
+			body, err := json.Marshal(pa)
+			s.Require().NoError(err)
+			req, err := http.NewRequest(
+				http.MethodPost,
+				fmt.Sprintf("%s/editor/check", s.Server.URL),
+				bytes.NewBuffer(body),
+			)
+			s.Require().NoError(err)
+			req.AddCookie(sessionCookie1)
+			client := &http.Client{}
+			res, err := client.Do(req)
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusBadRequest, res.StatusCode)
+		})
 }
 
 func (s *HandlerTestSuite) TestPlayerRunAi() {
