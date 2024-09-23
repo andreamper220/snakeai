@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	if err := editorserver.Run(50051); err != nil {
+	if err := editorserver.Run(50051, false); err != nil {
 		panic(err)
 	}
 }

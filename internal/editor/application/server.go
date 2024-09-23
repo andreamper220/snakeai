@@ -23,6 +23,8 @@ const (
 	MaxHeight = 30
 )
 
+var srv *grpc.Server
+
 type EditorServer struct {
 	pb.UnimplementedEditorServer
 }
@@ -104,7 +106,7 @@ func MakeStorage() error {
 	return nil
 }
 
-func Run(port int) error {
+func Run(port int, serverless bool) error {
 	if err := logger.Initialize(); err != nil {
 		return err
 	}
@@ -119,18 +121,24 @@ func Run(port int) error {
 		logger.Log.Fatal(err)
 	}
 
-	if err := initGRPCServer().Serve(listen); err != nil {
+	if !serverless {
+		srv = InitGRPCServer(port)
+	}
+	logger.Log.Infof("gRPC server listening on port %d", port)
+	if err = srv.Serve(listen); err != nil {
 		logger.Log.Fatal("gRPC server Serve: %v", err)
 		return err
 	}
 	return nil
 }
 
-func initGRPCServer() *grpc.Server {
-	s := grpc.NewServer()
-	pb.RegisterEditorServer(s, &EditorServer{})
+func Stop() {
+	srv.Stop()
+}
 
-	// TODO refactor (port)
-	logger.Log.Infof("gRPC server listening on port %d", 50051)
-	return s
+func InitGRPCServer(port int) *grpc.Server {
+	srv = grpc.NewServer()
+	pb.RegisterEditorServer(srv, &EditorServer{})
+
+	return srv
 }

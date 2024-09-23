@@ -145,6 +145,7 @@ func (s *HandlerTestSuite) TestPlayerPartyEnqueue() {
 	}
 	s.Logout(sessionCookie1)
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -240,6 +241,7 @@ func (s *HandlerTestSuite) TestPlayerPartyRestore() {
 
 	s.Logout(sessionCookie1)
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -376,6 +378,7 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 	s.Logout(sessionCookie1)
 	s.Logout(sessionCookie2)
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -477,6 +480,7 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 	s.Logout(sessionCookie1)
 	s.Logout(sessionCookie2)
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -527,6 +531,9 @@ func (s *HandlerTestSuite) TestPlayerMapCheck() {
 			s.Require().NoError(err)
 			s.Require().Equal(http.StatusBadRequest, res.StatusCode)
 		})
+
+	defer s.EditorServer.Stop()
+	defer s.Server.Close()
 }
 
 func (s *HandlerTestSuite) TestPlayerRunAi() {
@@ -665,5 +672,6 @@ func (s *HandlerTestSuite) TestPlayerRunAi() {
 	}
 	s.Logout(sessionCookie1)
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }

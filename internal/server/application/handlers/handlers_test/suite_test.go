@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +24,8 @@ import (
 
 type HandlerTestSuite struct {
 	suite.Suite
-	Server *httptest.Server
+	Server       *httptest.Server
+	EditorServer *grpc.Server
 }
 
 func (s *HandlerTestSuite) SetupTest() {
@@ -34,8 +36,9 @@ func (s *HandlerTestSuite) SetupTest() {
 	s.Require().NoError(os.Setenv("EDITOR_ADDRESS", "0.0.0.0:"+strconv.Itoa(editorPort)))
 	application.ParseFlags()
 
+	s.EditorServer = editorserver.InitGRPCServer(editorPort)
 	go func() {
-		s.Require().NoError(editorserver.Run(editorPort))
+		s.Require().NoError(editorserver.Run(editorPort, true))
 	}()
 	time.Sleep(500 * time.Millisecond)
 
