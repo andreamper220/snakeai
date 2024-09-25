@@ -10,7 +10,7 @@ Building AI for your Snake you can play with your friends and improve your algor
 
 <div align="center">
 
-[![build](https://github.com/andreamper220/snakeai/actions/workflows/ci.yml/badge.svg)](https://github.com/andreamper220/snakeai/actions/workflows/ci.yml)&nbsp;[![Go Report Card](https://goreportcard.com/badge/github.com/andreamper220/snakeai)](https://goreportcard.com/report/github.com/andreamper220/snakeai)&nbsp;[![Coverage Status](https://coveralls.io/repos/github/andreamper220/snakeai/badge.svg?branch=master)](https://coveralls.io/github/andreamper220/snakeai?branch=master)
+[![build](https://github.com/andreamper220/snakeai/actions/workflows/ci.yml/badge.svg)](https://github.com/andreamper220/snakeai/actions/workflows/ci.yml)&nbsp;[![Go Report Card](https://goreportcard.com/badge/github.com/andreamper220/snakeai)](https://goreportcard.com/report/github.com/andreamper220/snakeai)&nbsp;[![Coverage Status](https://coveralls.io/repos/github/andreamper220/snakeai/badge.svg?branch=master)](https://coveralls.io/github/andreamper220/snakeai?branch=main)
 
 </div>
 
