@@ -24,6 +24,7 @@ You can:
 - **Create** your lobby as **HOST**:
   - Up to **10** players simultaneously
   - From **5x5** to **30x30** field size
+  - (optional) Create your **CUSTOM** map with our map editor!
 - **Connect** to any existing lobby as **CLIENT** according to your game skills
 
 ### How does Match Making work?
@@ -45,7 +46,7 @@ You can:
     - **Else If** (you can chain them multiple times)
     - **Else**
   - Conditions (**>, <, >=, <=, ==, !=**):
-    - **Distance to Edge**
+    - **Distance to Edge / Wall**
     - **Distance to Food**
     - **Distance to another Snake**
 - **Try your AI**: unleash your snake AI power on the game field!
