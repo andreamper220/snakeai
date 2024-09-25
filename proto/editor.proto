@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package editor;
+
+option go_package = "editor/proto";
+
+message Obstacle {
+  int32 cx = 1; // column number (from 0)
+  int32 cy = 2; // row number (from 0)
+}
+
+message MapStruct {
+  int32 width = 1;
+  int32 height = 2;
+  repeated Obstacle obstacles = 3;
+}
+
+message Map {
+  string id = 1;
+  MapStruct struct = 2;
+}
+
+message CheckMapRequest {
+  MapStruct struct = 1;
+}
+message CheckMapResponse {}
+
+message SaveMapRequest {
+  MapStruct struct = 1;
+}
+message SaveMapResponse {
+  Map map = 1;
+}
+
+message GetMapRequest {
+  string id = 1;
+}
+message GetMapResponse {
+  Map map = 1;
+}
+
+service Editor {
+  rpc CheckMap(CheckMapRequest) returns (CheckMapResponse);
+  rpc SaveMap(SaveMapRequest) returns (SaveMapResponse);
+  rpc GetMap(GetMapRequest) returns (GetMapResponse);
+}

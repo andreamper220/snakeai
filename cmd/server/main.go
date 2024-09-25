@@ -1,10 +1,12 @@
 package main
 
-import "github.com/andreamper220/snakeai/internal/application"
+import (
+	gameserver "github.com/andreamper220/snakeai/internal/server/application"
+)
 
 func main() {
-	application.ParseFlags()
-	if err := application.Run(false); err != nil {
+	gameserver.ParseFlags()
+	if err := gameserver.Run(false); err != nil {
 		panic(err)
 	}
 }

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Play Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .topnav {
+            overflow: hidden;
+            background-color: #e9e9e9;
+        }
+
+        .topnav a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .topnav a.active {
+            background-color: #006653;
+            color: white;
+        }
+
+        .topnav input {
+            float: left;
+            height: 40px;
+            display: block;
+            width: 10%;
+            padding: 0 15px;
+            margin: 7px 5px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+        .topnav input:focus{
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .topnav input.button{
+            color: #fff;
+            background: #009579;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.4s;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            height: 40px;
+            width: 13%;
+            padding: 6px 16px;
+        }
+        .topnav input.button:hover{
+            background: #006653;
+        }
+        .topnav input.button:disabled{
+            background: #99a1a0;
+            cursor: auto;
+        }
+
+        .topnav .logout-container {
+            padding: 0 15px;
+            font-size: 17px;
+            outline: none;
+        }
+
+        .topnav .logout-container button {
+            float: right;
+            color: #fff;
+            background: #009579;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.4s;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            height: 55px;
+            width: 10%;
+            padding: 14px 16px;
+        }
+
+        .topnav .logout-container button:hover {
+            background: #006653;
+        }
+
+        .alert{
+            display: flex;
+            justify-content: flex-end;
+            font-size: 15px;
+            color: #ff1d1d;
+        }
+
+        .success{
+            display: flex;
+            justify-content: flex-end;
+            font-size: 15px;
+            color: #00c424;
+        }
+
+        #canvas {
+            background: #fff;
+        }
+        .box {
+            float: left;
+            height: 20px;
+            width: 20px;
+            margin-bottom: 15px;
+            border: 1px solid black;
+            clear: both;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="common_alert" class="alert"></div>
+<div id="common_success" class="success">Start to create your map...</div>
+<div class="topnav">
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <input id="width" type="number" placeholder="Width" min="5" max="30">
+    <input id="height" type="number" placeholder="Height" min="5" max="30">
+    <input id="check_button" type="button" class="button" value="Check map" disabled>
+    <input id="size" type="number" placeholder="Party size" min="1" max="10">
+    <input id="mm_button" type="button" class="button" value="Create party" disabled>
+    <div class="logout-container">
+        <button id="logout_button" type="button">Logout</button>
+    </div>
+</div>
+<div class="editor">
+    <canvas width="2000" height="2000" id="editor_area"></canvas>
+</div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script>
+    let canvas = document.getElementById('editor_area'),
+        context = canvas.getContext('2d'),
+        boxSize = 40, p = 10,
+        width = 0, height = 0, prevWidth = 0, prevHeight = 0,
+        obstacles = [],
+        bb = canvas.getBoundingClientRect(),
+        isMouseDown = false, toSetObstacles = true;
+
+    function renderField(width, height) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        context.beginPath();
+        context.strokeStyle = "black";
+        for (let x = 0; x <= width * boxSize; x += boxSize) {
+            context.moveTo(0.5 + x + p, p);
+            context.lineTo(0.5 + x + p, height * boxSize + p);
+        }
+        for (let x = 0; x <= height * boxSize; x += boxSize) {
+            context.moveTo(p, 0.5 + x + p);
+            context.lineTo(width * boxSize + p, 0.5 + x + p);
+        }
+        context.stroke();
+        if (prevWidth !== 0 || prevHeight !== 0) {
+            context.beginPath();
+            context.strokeStyle = "white";
+            if (prevHeight > height) {
+                for (let x = height * boxSize + 1; x <= prevHeight * boxSize; x += boxSize - 1) {
+                    context.moveTo(p, 0.5 + x + p);
+                    context.lineTo(width * boxSize + p, 0.5 + x + p);
+                }
+            }
+            if (prevWidth > width) {
+                for (let x = width * boxSize + 1; x <= prevWidth * boxSize; x += boxSize - 1) {
+                    context.moveTo(0.5 + x + p, p);
+                    context.lineTo(0.5 + x + p, height * boxSize + p);
+                }
+            }
+            context.stroke();
+        }
+
+        $('.box').css('background-color', 'white');
+
+        prevWidth = width;
+        prevHeight = height;
+    }
+
+    canvas.onmousedown = function (e) {
+        isMouseDown = true;
+        let mx = e.clientX - bb.left - p,
+            my = e.clientY - bb.top - p,
+            cx = mx - (mx % boxSize) + p,
+            cy = my - (my % boxSize) + p;
+        for (let i = 0; i < obstacles.length; i++) {
+            if (cx === obstacles[i][0] && cy === obstacles[i][1]) {
+                toSetObstacles = false;
+                break;
+            }
+        }
+    }
+    canvas.onmousemove = function (e) {
+        if (isMouseDown) {
+            let mx = e.clientX - bb.left - p,
+                my = e.clientY - bb.top - p,
+                cx = mx - (mx % boxSize) + p,
+                cy = my - (my % boxSize) + p;
+            if ((cx - p) / boxSize < prevWidth && (cy - p) / boxSize < prevHeight) {
+                context.fillStyle = toSetObstacles ? "black" : "white";
+                context.fillRect(cx + 1, cy + 1, boxSize - 1, boxSize - 1);
+
+                if (toSetObstacles) {
+                    let isObstacleExisted = false;
+                    for (let i = 0; i < obstacles.length; i++) {
+                        if (cx === obstacles[i][0] && cy === obstacles[i][1]) {
+                            isObstacleExisted = true;
+                            break;
+                        }
+                    }
+                    if (!isObstacleExisted) {
+                        obstacles.push([cx, cy]);
+                    }
+                } else {
+                    for (let i = 0; i < obstacles.length; i++) {
+                        if (cx === obstacles[i][0] && cy === obstacles[i][1]) {
+                            obstacles.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    canvas.onmouseup = function (e) {
+        isMouseDown = false;
+        toSetObstacles = true;
+    }
+    canvas.onmouseout = function (e) {
+        isMouseDown = false;
+        toSetObstacles = true;
+    }
+    
+    $(document).ready(function(){
+        $("#width").on('input', function (){
+            if ($("#height").val() !== "" && $("#width").val() !== "") {
+                $("#check_button").removeAttr('disabled');
+                if ($("#size").val() !== "") {
+                    $("#mm_button").removeAttr('disabled');
+                } else {
+                    $("#mm_button").attr("disabled", "disabled");
+                }
+                renderField($("#width").val(), $("#height").val());
+            } else {
+                $("#check_button").attr("disabled", "disabled");
+                $("#mm_button").attr("disabled", "disabled");
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                obstacles = [];
+            }
+        });
+        $("#height").on('input', function (){
+            if ($("#height").val() !== "" && $("#width").val() !== "") {
+                $("#check_button").removeAttr('disabled');
+                if ($("#size").val() !== "") {
+                    $("#mm_button").removeAttr('disabled');
+                } else {
+                    $("#mm_button").attr("disabled", "disabled");
+                }
+                renderField($("#width").val(), $("#height").val());
+            } else {
+                $("#check_button").attr("disabled", "disabled");
+                $("#mm_button").attr("disabled", "disabled");
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                obstacles = [];
+            }
+        });
+        $("#size").on('input', function (){
+            if ($("#size").val() !== "" && $("#height").val() !== "" && $("#width").val() !== "") {
+                $("#mm_button").removeAttr('disabled');
+            } else {
+                $("#mm_button").attr("disabled", "disabled");
+            }
+        });
+        $("#check_button").on('click', function(){
+            let requestObstacles = [];
+            for (let i = 0; i < obstacles.length; i++) {
+                requestObstacles.push([
+                    (obstacles[i][0] - p) / boxSize,
+                    (obstacles[i][1] - p) / boxSize
+                ]);
+            }
+            $.ajax({
+                url: '/editor/check',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    width: Number($("#width").val()),
+                    height: Number($("#height").val()),
+                    obstacles: requestObstacles
+                }),
+                success : function() {
+                    $("#common_alert").html("");
+                    $("#common_success").html("Map is correct!");
+                },
+                error: function(xhr) {
+                    $("#common_alert").html(xhr.responseText + "<br>");
+                    $("#common_success").html("");
+                }
+            })
+        });
+        $("#mm_button").on('click', function(){
+            let requestObstacles = [];
+            for (let i = 0; i < obstacles.length; i++) {
+                requestObstacles.push([
+                    (obstacles[i][0] - p) / boxSize,
+                    (obstacles[i][1] - p) / boxSize
+                ])
+            }
+            $.ajax({
+                url: '/player/party',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    size: Number($("#size").val()),
+                    width: Number($("#width").val()),
+                    height: Number($("#height").val()),
+                    obstacles: requestObstacles
+                }),
+                success : function(data) {
+                    $("#common_alert").html("");
+                    $("#common_success").html("redirecting...");
+                    location.href = "/match?mapId=" + data.map_id;
+                },
+                error: function(xhr) {
+                    $("#common_alert").html(xhr.responseText + "<br>");
+                    $("#common_success").html("");
+                }
+            })
+        });
+
+        $("#logout_button").on('click', function(){
+            $.ajax({
+                url: '/logout',
+                type : "POST",
+                success : function() {
+                    $("#common_alert").html("");
+                    $("#common_success").html("logged out");
+                    location.href = "/";
+                },
+                error: function(xhr) {
+                    $("#common_alert").html(xhr.responseText);
+                    $("#common_success").html("");
+                }
+            })
+        });
+    });
+</script>
+</html>

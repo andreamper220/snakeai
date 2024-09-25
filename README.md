@@ -35,10 +35,19 @@ Here is the full UML diagram to explain Match Making:
 ## What can I do while playing?
 
 You can:
-- **Write AI** with following commands:
-  - **Left** - turn head left
-  - **Right** - turn head right
-  - **Move** - continue moving
+- **Write AI** with following:
+  - Commands:
+    - **Left** - turn head left
+    - **Right** - turn head right
+    - **Move** - continue moving
+  - Condition Operators:
+    - **If**
+    - **Else If** (you can chain them multiple times)
+    - **Else**
+  - Conditions (**>, <, >=, <=, ==, !=**):
+    - **Distance to Edge**
+    - **Distance to Food**
+    - **Distance to another Snake**
 - **Try your AI**: unleash your snake AI power on the game field!
 - **Play with friends**: who is the best with coding skills? Let's know it!
 
