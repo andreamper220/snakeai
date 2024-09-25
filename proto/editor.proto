@@ -5,8 +5,8 @@ package editor;
 option go_package = "editor/proto";
 
 message Obstacle {
-  int32 cx = 1; // column number
-  int32 cy = 2; // row number
+  int32 cx = 1; // column number (from 0)
+  int32 cy = 2; // row number (from 0)
 }
 
 message MapStruct {

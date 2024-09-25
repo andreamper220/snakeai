@@ -1,8 +1,11 @@
 package game_test
 
 import (
+	"context"
 	"github.com/andreamper220/snakeai/internal/server/domain/game/data"
 	matchdata "github.com/andreamper220/snakeai/internal/server/domain/match/data"
+	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
+	pb "github.com/andreamper220/snakeai/proto"
 	"github.com/google/uuid"
 	"time"
 )
@@ -182,6 +185,89 @@ func (s *GameTestSuite) TestSnakeEdgeCollision() {
 			name:  "left",
 			initX: 1,
 			initY: 1,
+			xTo:   -1,
+			yTo:   0,
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			sn := data.NewSnake(tt.initX, tt.initY, tt.xTo, tt.yTo, []func(snake *data.Snake){
+				func(snake *data.Snake) { snake.Move() },
+			})
+			userId := uuid.New()
+			g.AddSnake(sn, userId)
+			time.Sleep(100 * time.Millisecond)
+			g.Update()
+			time.Sleep(100 * time.Millisecond)
+			s.Assert().Equal(0, len(g.GetSnakes()))
+		})
+	}
+
+	s.games.RemoveGame(g)
+}
+
+func (s *GameTestSuite) TestSnakeWallCollision() {
+	editorServer := s.CreateEditorServerWithClient(50051)
+	defer editorServer.Stop()
+
+	mapResponse, err := grpcclients.EditorClient.SaveMap(context.Background(), &pb.SaveMapRequest{
+		Struct: &pb.MapStruct{
+			Width:  gameWidth,
+			Height: gameHeight,
+			Obstacles: []*pb.Obstacle{
+				{
+					Cx: 2,
+					Cy: 2,
+				},
+			},
+		},
+	})
+	s.Require().NoError(err)
+
+	pa := matchdata.NewParty()
+	pa.MapId = mapResponse.Map.Id
+	g := data.NewGame(gameWidth, gameHeight, &pa)
+	g.Food = &data.Food{
+		Position: data.Point{
+			X: 1,
+			Y: 1,
+		},
+	}
+	s.games.AddGame(g)
+
+	tests := []struct {
+		name  string
+		initX int
+		initY int
+		xTo   int
+		yTo   int
+	}{
+		{
+			name:  "up",
+			initX: 3,
+			initY: 2,
+			xTo:   0,
+			yTo:   1,
+		},
+		{
+			name:  "right",
+			initX: 2,
+			initY: 3,
+			xTo:   1,
+			yTo:   0,
+		},
+		{
+			name:  "down",
+			initX: 3,
+			initY: 4,
+			xTo:   0,
+			yTo:   -1,
+		},
+		{
+			name:  "left",
+			initX: 4,
+			initY: 3,
 			xTo:   -1,
 			yTo:   0,
 		},

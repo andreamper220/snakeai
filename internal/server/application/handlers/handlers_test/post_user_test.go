@@ -100,6 +100,7 @@ func (s *HandlerTestSuite) TestUserRegister() {
 			})
 	}
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -188,6 +189,7 @@ func (s *HandlerTestSuite) TestUserLogin() {
 			})
 	}
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }
 
@@ -253,5 +255,6 @@ func (s *HandlerTestSuite) TestUserLogout() {
 			})
 	}
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }

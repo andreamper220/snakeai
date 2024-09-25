@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// Player represent a thread-safe object with ID, name, skill and party match-making fields.
 type Player struct {
 	mux        sync.Mutex
 	Id         uuid.UUID `json:"id"`
@@ -17,6 +18,7 @@ type Player struct {
 	InProcess  bool      `json:"-"`
 }
 
+// NewPlayer creates a player with skill delta = 2.
 func NewPlayer() Player {
 	return Player{SkillDelta: 2}
 }

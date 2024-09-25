@@ -5,10 +5,12 @@ import (
 	"sync"
 )
 
+// CurrentParties contains parties created by now.
 var CurrentParties = Parties{
 	Parties: make([]*Party, 0),
 }
 
+// Parties contains a thread-safe parties collection.
 type Parties struct {
 	mux     sync.RWMutex
 	Parties []*Party
@@ -36,6 +38,7 @@ func (parties *Parties) RemoveParty(pa *Party) {
 	parties.Parties = result
 }
 
+// Party represent a thread-safe object with ID, player, skill and game field properties.
 type Party struct {
 	mux      sync.Mutex
 	Id       string    `json:"id"`
@@ -47,6 +50,7 @@ type Party struct {
 	MapId    string    `json:"map_id"`
 }
 
+// NewParty creates a new party with random ID, empty players and skill = 0.
 func NewParty() Party {
 	return Party{Id: domain.RandSeq(10), Players: []*Player{}, AvgSkill: 0}
 }

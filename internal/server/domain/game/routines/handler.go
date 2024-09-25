@@ -55,24 +55,18 @@ func HandleGames(game *gamedata.Game, gameTicker time.Ticker) {
 				})
 
 				if err == nil {
-					mapObstacles := gameMap.Map.Struct.Obstacles
+					mapObstacles := gameMap.GetMap().GetStruct().GetObstacles()
 					obstacles := make([][2]int32, len(mapObstacles))
 					for i := 0; i < len(mapObstacles); i++ {
-						obstacles[i][0] = mapObstacles[i].Cx
-						obstacles[i][1] = mapObstacles[i].Cy
+						obstacles[i][0] = mapObstacles[i].GetCx()
+						obstacles[i][1] = mapObstacles[i].GetCy()
 					}
 					gameJson.Obstacles = obstacles
 				}
 			}
 			game.RUnlock()
 
-			for _, p := range game.Party.Players {
-				err := ws.Connections.WriteJSON(p.Id, gameJson)
-				if err != nil {
-					ws.Connections.Remove(p.Id)
-					logger.Log.Errorf("error writing to websocket: %s", err.Error())
-				}
-			}
+			broadcastGameState(game, gameJson)
 			game.Lock()
 			GameJobsChannel <- game
 			game.Unlock()
@@ -80,6 +74,16 @@ func HandleGames(game *gamedata.Game, gameTicker time.Ticker) {
 			gameTicker.Stop()
 			logger.Log.Infof("party with ID %s disbanded", game.Party.Id)
 			return
+		}
+	}
+}
+
+func broadcastGameState(game *gamedata.Game, gameJson json.GameJson) {
+	for _, p := range game.Party.Players {
+		err := ws.Connections.WriteJSON(p.Id, gameJson)
+		if err != nil {
+			ws.Connections.Remove(p.Id)
+			logger.Log.Errorf("error writing to websocket: %s", err.Error())
 		}
 	}
 }

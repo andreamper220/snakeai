@@ -8,11 +8,13 @@ import (
 
 var colors = [10]string{"yellow", "blue", "red", "purple", "pink", "orange", "black", "brown", "cyan", "gray"}
 
+// Point contains XY coordinates (starting from 1!).
 type Point struct {
 	X int
 	Y int
 }
 
+// Snake represent an object with color, body XY coordinates + direction, actions sequence and game pointer.
 type Snake struct {
 	sync.RWMutex
 	Color         string
@@ -41,6 +43,9 @@ func (s *Snake) GetGame() *Game {
 	defer s.Game.RUnlock()
 	return s.Game
 }
+
+// TODO strategy pattern ?
+
 func (s *Snake) Move() {
 	s.AiFuncNumPrev = s.AiFuncNum
 	newHead := Point{

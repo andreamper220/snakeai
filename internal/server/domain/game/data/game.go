@@ -6,15 +6,17 @@ import (
 	matchdata "github.com/andreamper220/snakeai/internal/server/domain/match/data"
 	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/storages"
+	"github.com/andreamper220/snakeai/pkg/logger"
 	pb "github.com/andreamper220/snakeai/proto"
 	"github.com/google/uuid"
 	"sync"
-
-	"github.com/andreamper220/snakeai/pkg/logger"
+	"time"
 )
 
+// CurrentGames contains games used by now.
 var CurrentGames Games
 
+// Games contains a thread-safe games collection.
 type Games struct {
 	mux   sync.RWMutex
 	Games []*Game
@@ -46,11 +48,13 @@ func (games *Games) RemoveGame(game *Game) {
 	games.Games = result
 }
 
+// Snakes contains a thread-safe snakes collection.
 type Snakes struct {
 	sync.RWMutex
 	Data map[uuid.UUID]*Snake `json:"data"`
 }
 
+// Game represents a thread-safe object with snakes, food, field preferences, scores and party pointer.
 type Game struct {
 	sync.RWMutex
 	Id     string
@@ -63,6 +67,7 @@ type Game struct {
 	Done   chan bool
 }
 
+// NewGame creates a new game object with random ID and food, empty snakes and scores, and done channel.
 func NewGame(width, height int, party *matchdata.Party) *Game {
 	game := &Game{
 		Id:     domain.RandSeq(10),
@@ -73,7 +78,7 @@ func NewGame(width, height int, party *matchdata.Party) *Game {
 			Data: make(map[uuid.UUID]*Snake),
 		},
 		Scores: make(map[uuid.UUID]int),
-		Food:   NewFood(width, height, party.MapId),
+		Food:   CreateRandomFood(width, height, party.MapId),
 		Done:   make(chan bool),
 	}
 
@@ -147,25 +152,8 @@ func (g *Game) handleCollisions(snake *Snake) {
 	}
 
 	head := snake.Body[0]
-	// edge walls collision
-	if head.X == 0 || head.Y == 0 || head.X > g.Width || head.Y > g.Height {
-		g.RemoveSnake(userId)
-		return
-	}
-	if g.Party.MapId != "" {
-		// edge custom walls collision
-		gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
-			Id: g.Party.MapId,
-		})
-		if err == nil {
-			for _, obstacle := range gameMap.Map.Struct.Obstacles {
-				if head.X-1 == int(obstacle.Cx) && head.Y-1 == int(obstacle.Cy) {
-					g.RemoveSnake(userId)
-					return
-				}
-			}
-		}
-	}
+	// obstacles collisions
+	g.handleObstacleCollisions(userId, head)
 	// self-collision
 	for _, part := range snake.Body[1:] {
 		if head.X == part.X && head.Y == part.Y {
@@ -191,11 +179,34 @@ func (g *Game) handleCollisions(snake *Snake) {
 	}
 	// food eating
 	if head.X == g.Food.Position.X && head.Y == g.Food.Position.Y {
-		g.Food = NewFood(g.Width, g.Height, g.Party.MapId)
+		g.Food = CreateRandomFood(g.Width, g.Height, g.Party.MapId)
 		snake.GrowCounter += 1
 		g.Scores[userId]++
 		if err := storages.Storage.IncreasePlayerScore(userId); err != nil {
 			logger.Log.Error(err.Error())
+		}
+	}
+}
+func (g *Game) handleObstacleCollisions(userId uuid.UUID, head Point) {
+	// edge walls collision
+	if head.X == 0 || head.Y == 0 || head.X > g.Width || head.Y > g.Height {
+		g.RemoveSnake(userId)
+		return
+	}
+	if g.Party.MapId != "" {
+		// edge custom walls collision
+		ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+		defer cancel()
+		gameMap, err := grpcclients.EditorClient.GetMap(ctx, &pb.GetMapRequest{
+			Id: g.Party.MapId,
+		})
+		if err == nil {
+			for _, obstacle := range gameMap.GetMap().GetStruct().GetObstacles() {
+				if head.X-1 == int(obstacle.GetCx()) && head.Y-1 == int(obstacle.GetCy()) {
+					g.RemoveSnake(userId)
+					return
+				}
+			}
 		}
 	}
 }

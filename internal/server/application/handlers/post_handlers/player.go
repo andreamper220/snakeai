@@ -7,6 +7,7 @@ import (
 	"github.com/andreamper220/snakeai/internal/server/domain/ws"
 	"github.com/google/uuid"
 	"net/http"
+	"time"
 
 	"github.com/andreamper220/snakeai/internal/server/domain/game/data"
 	gamejson "github.com/andreamper220/snakeai/internal/server/domain/game/json"
@@ -21,7 +22,7 @@ import (
 
 var ErrIncorrectFieldParams = errors.New("incorrect field parameters")
 
-func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+func CreateOrJoinParty(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	var partyJson matchjson.PartyJson
 	if err := json.NewDecoder(r.Body).Decode(&partyJson); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -33,7 +34,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 		return
 	}
 
-	mapId := ""
+	mapID := ""
 	if len(partyJson.Obstacles) > 0 {
 		obstacles := make([]*pb.Obstacle, len(partyJson.Obstacles))
 		for i := 0; i < len(obstacles); i++ {
@@ -50,20 +51,22 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 				Obstacles: obstacles,
 			},
 		}
-		responseMap, err := grpcclients.EditorClient.SaveMap(context.Background(), requestMap)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		responseMap, err := grpcclients.EditorClient.SaveMap(ctx, requestMap)
 		if err != nil {
 			logger.Log.Error(err.Error())
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		mapId = responseMap.Map.Id
+		mapID = responseMap.GetMap().GetId()
 	}
 
 	pa := matchdata.NewParty()
 	pa.Size = partyJson.Size
 	pa.Width = partyJson.Width
 	pa.Height = partyJson.Height
-	pa.MapId = mapId
+	pa.MapId = mapID
 
 	p, err := storages.Storage.GetPlayerById(userId)
 	if err != nil {
@@ -81,7 +84,7 @@ func PlayerPartyEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 	}
 }
 
-func PlayerPartyRestore(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+func RestoreParty(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	if game := data.GetGameByPlayer(userId); game != nil {
 		err := ws.Connections.WriteJSON(userId, game.Party)
 		if err != nil {
@@ -94,7 +97,7 @@ func PlayerPartyRestore(w http.ResponseWriter, r *http.Request, userId uuid.UUID
 	}
 }
 
-func PlayerEnqueue(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
+func JoinParty(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 	p, err := storages.Storage.GetPlayerById(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -175,7 +178,9 @@ func PlayerMapCheck(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 			Obstacles: obstacles,
 		},
 	}
-	_, err := grpcclients.EditorClient.CheckMap(context.Background(), requestMap)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := grpcclients.EditorClient.CheckMap(ctx, requestMap)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

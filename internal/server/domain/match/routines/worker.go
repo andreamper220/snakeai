@@ -10,6 +10,8 @@ import (
 var PlayerJobsChannel = make(chan *data.Player, 100)
 
 func MatchWorker() {
+	// TODO observer pattern ?
+
 	for p := range PlayerJobsChannel {
 		if p.InProcess {
 			continue

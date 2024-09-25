@@ -148,5 +148,6 @@ func (s *HandlerTestSuite) TestPlayerRemoveAi() {
 			})
 	}
 
+	defer s.EditorServer.Stop()
 	defer s.Server.Close()
 }

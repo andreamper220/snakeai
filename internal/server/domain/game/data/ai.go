@@ -3,12 +3,13 @@ package data
 import (
 	"context"
 	"errors"
-	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
-	"github.com/andreamper220/snakeai/pkg/logger"
-	pb "github.com/andreamper220/snakeai/proto"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
+	pb "github.com/andreamper220/snakeai/proto"
 )
 
 type ObstacleType string
@@ -38,6 +39,7 @@ const (
 	GreaterOrEqual = ObstacleCondition(">=")
 )
 
+// AiCondition contains obstacle type, direction, condition and distance.
 type AiCondition struct {
 	ObstacleType      ObstacleType
 	ObstacleDirection ObstacleDirection
@@ -46,187 +48,22 @@ type AiCondition struct {
 }
 
 func (condition AiCondition) Check(snake *Snake, game *Game) bool {
-	head := snake.Body[0]
 	direction := snake.Direction
 	var obstaclePoints = make([]Point, 0)
 	switch condition.ObstacleType {
 	case ObstacleEdge:
 		if game.Party.MapId != "" {
-			gameMap, err := grpcclients.EditorClient.GetMap(context.Background(), &pb.GetMapRequest{
-				Id: game.Party.MapId,
-			})
-			if err == nil {
-				requestObstacles := gameMap.Map.Struct.Obstacles
-				for i := 0; i < len(requestObstacles); i++ {
-					x := requestObstacles[i].Cx + 1
-					y := requestObstacles[i].Cy + 1
-					if direction.X == 0 {
-						if condition.ObstacleDirection == Left {
-							if direction.Y == 1 {
-								x--
-							} else {
-								x++
-							}
-						} else if condition.ObstacleDirection == Right {
-							if direction.Y == 1 {
-								x++
-							} else {
-								x--
-							}
-						} else {
-							y -= int32(direction.Y)
-						}
-					} else {
-						if condition.ObstacleDirection == Left {
-							if direction.X == 1 {
-								y++
-							} else {
-								y--
-							}
-						} else if condition.ObstacleDirection == Right {
-							if direction.X == 1 {
-								y--
-							} else {
-								y++
-							}
-						} else {
-							x -= int32(direction.X)
-						}
-					}
-					obstaclePoints = append(obstaclePoints, Point{X: int(x), Y: int(y)})
-				}
-			}
+			obstaclePoints = append(obstaclePoints, checkObstacleWalls(game, direction, condition)...)
 		}
-		switch condition.ObstacleDirection {
-		case Forward:
-			if direction.X == 0 {
-				if direction.Y == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
-				}
-			} else {
-				if direction.X == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
-				}
-			}
-		case Right:
-			if direction.X == 0 {
-				if direction.Y == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
-				}
-			} else {
-				if direction.X == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
-				}
-			}
-		case Left:
-			if direction.X == 0 {
-				if direction.Y == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
-				}
-			} else {
-				if direction.X == 1 {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
-				} else {
-					obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
-				}
-			}
-		}
+		obstaclePoints = append(obstaclePoints, checkObstacleEdges(game, snake.Body[0], direction, condition)...)
 	case ObstacleFood:
-		x := game.Food.Position.X
-		y := game.Food.Position.Y
-		if direction.X == 0 {
-			if condition.ObstacleDirection == Left {
-				if direction.Y == 1 {
-					x--
-				} else {
-					x++
-				}
-			} else if condition.ObstacleDirection == Right {
-				if direction.Y == 1 {
-					x++
-				} else {
-					x--
-				}
-			} else {
-				y -= direction.Y
-			}
-		} else {
-			if condition.ObstacleDirection == Left {
-				if direction.X == 1 {
-					y++
-				} else {
-					y--
-				}
-			} else if condition.ObstacleDirection == Right {
-				if direction.X == 1 {
-					y--
-				} else {
-					y++
-				}
-			} else {
-				x -= direction.X
-			}
-		}
-		obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
+		obstaclePoints = append(obstaclePoints, checkObstacleFood(game.Food.Position.X, game.Food.Position.Y, direction, condition)...)
 	case ObstacleSnake:
-		for _, sn := range game.GetSnakes() {
-			sn.RLock()
-			if sn != snake {
-				for _, bodyPoint := range sn.Body {
-					x := bodyPoint.X
-					y := bodyPoint.Y
-					if direction.X == 0 {
-						if condition.ObstacleDirection == Left {
-							if direction.Y == 1 {
-								x--
-							} else {
-								x++
-							}
-						} else if condition.ObstacleDirection == Right {
-							if direction.Y == 1 {
-								x++
-							} else {
-								x--
-							}
-						} else {
-							y -= direction.Y
-						}
-					} else {
-						if condition.ObstacleDirection == Left {
-							if direction.X == 1 {
-								y++
-							} else {
-								y--
-							}
-						} else if condition.ObstacleDirection == Right {
-							if direction.X == 1 {
-								y--
-							} else {
-								y++
-							}
-						} else {
-							x -= direction.X
-						}
-					}
-					obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
-				}
-			}
-			sn.RUnlock()
-		}
+		obstaclePoints = append(obstaclePoints, checkObstacleSnakes(game, snake, direction, condition)...)
 	}
 
 	for _, obstaclePoint := range obstaclePoints {
-		if check := condition.checkConditionDirection(direction, obstaclePoint, head); check {
+		if check := condition.checkConditionDirection(direction, obstaclePoint, snake.Body[0]); check {
 			return true
 		}
 	}
@@ -236,7 +73,6 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 func (condition AiCondition) checkConditionDirection(direction, obstaclePoint, head Point) bool {
 	switch condition.ObstacleDirection {
 	case Forward:
-		logger.Log.Infof("%v %v", obstaclePoint, head)
 		switch condition.ObstacleCondition {
 		case Equal:
 			if (direction.Y == 0 && abs(obstaclePoint.X-head.X) == condition.ObstacleDistance && obstaclePoint.Y == head.Y) ||
@@ -270,7 +106,6 @@ func (condition AiCondition) checkConditionDirection(direction, obstaclePoint, h
 			}
 		}
 	case Right, Left:
-		logger.Log.Infof("%v %v", obstaclePoint, head)
 		switch condition.ObstacleCondition {
 		case Equal:
 			if (direction.Y == 0 && obstaclePoint.X == head.X && abs(obstaclePoint.Y-head.Y) == condition.ObstacleDistance) ||
@@ -319,6 +154,202 @@ func GenerateAiFunctions(ai string) ([]func(snake *Snake), error) {
 	}
 
 	return processAi(ai), nil
+}
+
+func checkObstacleWalls(game *Game, direction Point, condition AiCondition) []Point {
+	var obstaclePoints = make([]Point, 0)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+	gameMap, err := grpcclients.EditorClient.GetMap(ctx, &pb.GetMapRequest{
+		Id: game.Party.MapId,
+	})
+	if err == nil {
+		requestObstacles := gameMap.GetMap().GetStruct().GetObstacles()
+		for i := 0; i < len(requestObstacles); i++ {
+			x := requestObstacles[i].GetCx() + 1
+			y := requestObstacles[i].GetCy() + 1
+			if direction.X == 0 {
+				if condition.ObstacleDirection == Left {
+					if direction.Y == 1 {
+						x--
+					} else {
+						x++
+					}
+				} else if condition.ObstacleDirection == Right {
+					if direction.Y == 1 {
+						x++
+					} else {
+						x--
+					}
+				} else {
+					y -= int32(direction.Y)
+				}
+			} else {
+				if condition.ObstacleDirection == Left {
+					if direction.X == 1 {
+						y++
+					} else {
+						y--
+					}
+				} else if condition.ObstacleDirection == Right {
+					if direction.X == 1 {
+						y--
+					} else {
+						y++
+					}
+				} else {
+					x -= int32(direction.X)
+				}
+			}
+			obstaclePoints = append(obstaclePoints, Point{X: int(x), Y: int(y)})
+		}
+	}
+
+	return obstaclePoints
+}
+
+func checkObstacleEdges(game *Game, head Point, direction Point, condition AiCondition) []Point {
+	var obstaclePoints = make([]Point, 0)
+
+	switch condition.ObstacleDirection {
+	case Forward:
+		if direction.X == 0 {
+			if direction.Y == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
+			}
+		} else {
+			if direction.X == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
+			}
+		}
+	case Right:
+		if direction.X == 0 {
+			if direction.Y == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
+			}
+		} else {
+			if direction.X == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
+			}
+		}
+	case Left:
+		if direction.X == 0 {
+			if direction.Y == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: game.Width, Y: head.Y})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: 1, Y: head.Y})
+			}
+		} else {
+			if direction.X == 1 {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: 1})
+			} else {
+				obstaclePoints = append(obstaclePoints, Point{X: head.X, Y: game.Height})
+			}
+		}
+	}
+
+	return obstaclePoints
+}
+
+func checkObstacleFood(x, y int, direction Point, condition AiCondition) []Point {
+	var obstaclePoints = make([]Point, 0)
+
+	if direction.X == 0 {
+		if condition.ObstacleDirection == Left {
+			if direction.Y == 1 {
+				x--
+			} else {
+				x++
+			}
+		} else if condition.ObstacleDirection == Right {
+			if direction.Y == 1 {
+				x++
+			} else {
+				x--
+			}
+		} else {
+			y -= direction.Y
+		}
+	} else {
+		if condition.ObstacleDirection == Left {
+			if direction.X == 1 {
+				y++
+			} else {
+				y--
+			}
+		} else if condition.ObstacleDirection == Right {
+			if direction.X == 1 {
+				y--
+			} else {
+				y++
+			}
+		} else {
+			x -= direction.X
+		}
+	}
+	obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
+
+	return obstaclePoints
+}
+
+func checkObstacleSnakes(game *Game, snake *Snake, direction Point, condition AiCondition) []Point {
+	var obstaclePoints = make([]Point, 0)
+
+	for _, sn := range game.GetSnakes() {
+		sn.RLock()
+		if sn != snake {
+			for _, bodyPoint := range sn.Body {
+				x := bodyPoint.X
+				y := bodyPoint.Y
+				if direction.X == 0 {
+					if condition.ObstacleDirection == Left {
+						if direction.Y == 1 {
+							x--
+						} else {
+							x++
+						}
+					} else if condition.ObstacleDirection == Right {
+						if direction.Y == 1 {
+							x++
+						} else {
+							x--
+						}
+					} else {
+						y -= direction.Y
+					}
+				} else {
+					if condition.ObstacleDirection == Left {
+						if direction.X == 1 {
+							y++
+						} else {
+							y--
+						}
+					} else if condition.ObstacleDirection == Right {
+						if direction.X == 1 {
+							y--
+						} else {
+							y++
+						}
+					} else {
+						x -= direction.X
+					}
+				}
+				obstaclePoints = append(obstaclePoints, Point{X: x, Y: y})
+			}
+		}
+		sn.RUnlock()
+	}
+
+	return obstaclePoints
 }
 
 func processAi(ai string) []func(snake *Snake) {

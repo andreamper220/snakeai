@@ -36,7 +36,7 @@ func (s *HandlerTestSuite) SetupTest() {
 	s.Require().NoError(os.Setenv("EDITOR_ADDRESS", "0.0.0.0:"+strconv.Itoa(editorPort)))
 	application.ParseFlags()
 
-	s.EditorServer = editorserver.InitGRPCServer(editorPort)
+	s.EditorServer = editorserver.InitGRPCServer()
 	go func() {
 		s.Require().NoError(editorserver.Run(editorPort, true))
 	}()

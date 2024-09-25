@@ -5,6 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// User represents an object with ID, email and password structure.
 type User struct {
 	Id       uuid.UUID `json:"id"`
 	Email    string    `json:"email"`

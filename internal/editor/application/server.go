@@ -30,8 +30,8 @@ type EditorServer struct {
 }
 
 func (s EditorServer) CheckMap(ctx context.Context, request *pb.CheckMapRequest) (*pb.CheckMapResponse, error) {
-	width := request.Struct.Width
-	height := request.Struct.Height
+	width := request.GetStruct().GetWidth()
+	height := request.GetStruct().GetHeight()
 	if width < MinWidth || width > MaxWidth {
 		return nil, status.Error(codes.InvalidArgument, "width out of range")
 	}
@@ -41,36 +41,36 @@ func (s EditorServer) CheckMap(ctx context.Context, request *pb.CheckMapRequest)
 	return &pb.CheckMapResponse{}, nil
 }
 func (s EditorServer) SaveMap(ctx context.Context, request *pb.SaveMapRequest) (*pb.SaveMapResponse, error) {
-	requestObstacles := request.Struct.GetObstacles()
+	requestObstacles := request.GetStruct().GetObstacles()
 	obstacles := make([][2]int32, len(requestObstacles))
 	for i := 0; i < len(requestObstacles); i++ {
-		obstacles[i][0] = requestObstacles[i].Cx
-		obstacles[i][1] = requestObstacles[i].Cy
+		obstacles[i][0] = requestObstacles[i].GetCx()
+		obstacles[i][1] = requestObstacles[i].GetCy()
 	}
 	gameMap := &domain.Map{
-		Width:     request.Struct.Width,
-		Height:    request.Struct.Height,
+		Width:     request.GetStruct().GetWidth(),
+		Height:    request.GetStruct().GetHeight(),
 		Obstacles: obstacles,
 	}
 
-	mapId, err := storages.EditorStorage.AddMap(gameMap)
+	mapID, err := storages.EditorStorage.AddMap(gameMap)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.SaveMapResponse{
 		Map: &pb.Map{
-			Id:     mapId.String(),
-			Struct: request.Struct,
+			Id:     mapID.String(),
+			Struct: request.GetStruct(),
 		},
 	}, nil
 }
 func (s EditorServer) GetMap(ctx context.Context, request *pb.GetMapRequest) (*pb.GetMapResponse, error) {
-	mapId, err := uuid.Parse(request.GetId())
+	mapID, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	gameMap, err := storages.EditorStorage.GetMap(mapId)
+	gameMap, err := storages.EditorStorage.GetMap(mapID)
 	if err != nil {
 		if errors.Is(err, storages.ErrMapNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -122,7 +122,7 @@ func Run(port int, serverless bool) error {
 	}
 
 	if !serverless {
-		srv = InitGRPCServer(port)
+		srv = InitGRPCServer()
 	}
 	logger.Log.Infof("gRPC server listening on port %d", port)
 	if err = srv.Serve(listen); err != nil {
@@ -132,11 +132,7 @@ func Run(port int, serverless bool) error {
 	return nil
 }
 
-func Stop() {
-	srv.Stop()
-}
-
-func InitGRPCServer(port int) *grpc.Server {
+func InitGRPCServer() *grpc.Server {
 	srv = grpc.NewServer()
 	pb.RegisterEditorServer(srv, &EditorServer{})
 
