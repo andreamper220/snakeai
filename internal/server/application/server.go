@@ -141,7 +141,7 @@ func Run(serverless bool) error {
 		Prompt: autocert.AcceptTOS,
 		Cache:  autocert.DirCache("cert-cache"),
 		// Put your domain here:
-		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
+		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online", "194.67.84.216"),
 	}
 
 	server := &http.Server{
