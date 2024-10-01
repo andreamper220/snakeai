@@ -136,17 +136,18 @@ func Run(serverless bool) error {
 		return nil
 	}
 
-	certManager := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("/etc/ssl/certs"),
-		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
-	}
-
-	server := &http.Server{
-		Addr:      ":443",
-		Handler:   MakeRouter(),
-		TLSConfig: certManager.TLSConfig(),
-	}
-
-	return server.ListenAndServeTLS("", "")
+	//certManager := autocert.Manager{
+	//	Prompt:     autocert.AcceptTOS,
+	//	Cache:      autocert.DirCache("/etc/ssl/certs"),
+	//	HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
+	//}
+	//
+	//server := &http.Server{
+	//	Addr:      ":443",
+	//	Handler:   MakeRouter(),
+	//	TLSConfig: certManager.TLSConfig(),
+	//}
+	//
+	//return server.ListenAndServeTLS("", "")
+	return http.Serve(autocert.NewListener("snakeai.netvolk.online"), MakeRouter())
 }
