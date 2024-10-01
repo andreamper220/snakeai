@@ -138,7 +138,7 @@ func Run(serverless bool) error {
 
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("/etc/ssl/certs"),
+		Cache:      autocert.DirCache("certs"),
 		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
 	}
 
