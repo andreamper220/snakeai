@@ -15,8 +15,8 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/ssl/fullchain.pem /app/ssl/fullchain.pem
-COPY --from=builder /app/ssl/privkey.pem /app/ssl/privkey.pem
+COPY --from=builder /app/ssl/fullchain.pem /app/internal/server/application/ssl/fullchain.pem
+COPY --from=builder /app/ssl/privkey.pem /app/internal/server/application/ssl/privkey.pem
 COPY --from=builder /app/internal/server/templates /app/internal/server/templates
 COPY --from=builder /app/server /app/server
 
