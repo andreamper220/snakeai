@@ -139,11 +139,11 @@ func Run(serverless bool) error {
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		Cache:      autocert.DirCache("/etc/ssl/certs"),
-		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online", "194.67.84.216"),
+		HostPolicy: autocert.HostWhitelist("194.67.84.216"),
 	}
 
 	server := &http.Server{
-		Addr:      ":https",
+		Addr:      ":443",
 		Handler:   MakeRouter(),
 		TLSConfig: certManager.TLSConfig(),
 	}
