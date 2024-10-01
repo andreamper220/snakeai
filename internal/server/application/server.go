@@ -152,6 +152,6 @@ func Run(serverless bool) error {
 
 	dir, _ := filepath.Split(os.Args[0])
 	certFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
-	keyFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
+	keyFilePath := filepath.Join(dir, "internal/server/ssl/privkey.pem")
 	return server.ListenAndServeTLS(certFilePath, keyFilePath)
 }
