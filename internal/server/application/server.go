@@ -9,6 +9,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/delete_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/get_handlers"
@@ -148,5 +150,8 @@ func Run(serverless bool) error {
 		TLSConfig: certManager.TLSConfig(),
 	}
 
-	return server.ListenAndServeTLS("ssl/fullchain.pem", "ssl/privkey.pem")
+	dir, _ := filepath.Split(os.Args[0])
+	certFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
+	keyFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
+	return server.ListenAndServeTLS(certFilePath, keyFilePath)
 }
