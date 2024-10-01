@@ -148,5 +148,5 @@ func Run(serverless bool) error {
 		TLSConfig: certManager.TLSConfig(),
 	}
 
-	return server.ListenAndServeTLS("/etc/letsencrypt/live/snakeai.netvolk.online/fullchain.pem", "/etc/letsencrypt/live/snakeai.netvolk.online/privkey.pem")
+	return server.ListenAndServeTLS("/ssl/fullchain.pem", "/ssl/privkey.pem")
 }
