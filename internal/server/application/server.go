@@ -1,7 +1,6 @@
 package application
 
 import (
-	"crypto/tls"
 	"database/sql"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -138,20 +137,16 @@ func Run(serverless bool) error {
 	}
 
 	certManager := autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		Cache:  autocert.DirCache("cert-cache"),
-		// Put your domain here:
+		Prompt:     autocert.AcceptTOS,
+		Cache:      autocert.DirCache("cert-cache"),
 		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online", "194.67.84.216"),
 	}
 
 	server := &http.Server{
-		Addr:    ":443",
-		Handler: MakeRouter(),
-		TLSConfig: &tls.Config{
-			GetCertificate: certManager.GetCertificate,
-		},
+		Addr:      ":https",
+		Handler:   MakeRouter(),
+		TLSConfig: certManager.TLSConfig(),
 	}
 
-	go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
 	return server.ListenAndServeTLS("", "")
 }
