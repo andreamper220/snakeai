@@ -2,10 +2,11 @@ package application
 
 import (
 	"database/sql"
+	"github.com/caddyserver/certmagic"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/libdns/cloudflare"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
@@ -138,20 +139,22 @@ func Run(serverless bool) error {
 		return nil
 	}
 
-	certManager := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("certs"),
-		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
-	}
-
-	server := &http.Server{
-		Addr:      ":443",
-		Handler:   MakeRouter(),
-		TLSConfig: certManager.TLSConfig(),
-	}
-
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.Email = "anrewwolf68@gmail.com"
+	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
 	dir, _ := filepath.Split(os.Args[0])
-	certFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
-	keyFilePath := filepath.Join(dir, "internal/server/ssl/privkey.pem")
-	return server.ListenAndServeTLS(certFilePath, keyFilePath)
+	apiTokenFilePath := filepath.Join(dir, "ssl/cloudflare_api_token.txt")
+	token, err := os.ReadFile(apiTokenFilePath)
+	if err != nil {
+		return err
+	}
+	certmagic.DefaultACME.DNS01Solver = &certmagic.DNS01Solver{
+		DNSManager: certmagic.DNSManager{
+			DNSProvider: &cloudflare.Provider{
+				APIToken: string(token),
+			},
+		},
+	}
+
+	return certmagic.HTTPS([]string{"snakeai.netvolk.online"}, MakeRouter())
 }
