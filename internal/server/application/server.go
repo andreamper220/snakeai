@@ -2,17 +2,6 @@ package application
 
 import (
 	"database/sql"
-	"github.com/caddyserver/certmagic"
-	"github.com/go-chi/chi/v5"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/libdns/cloudflare"
-	"github.com/redis/go-redis/v9"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
-	"os"
-	"path/filepath"
-
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/delete_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/get_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/post_handlers"
@@ -26,6 +15,13 @@ import (
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/storages"
 	"github.com/andreamper220/snakeai/pkg/logger"
 	pb "github.com/andreamper220/snakeai/proto"
+	"github.com/go-chi/chi/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"net/http"
 )
 
 func MakeRouter() *chi.Mux {
@@ -139,22 +135,22 @@ func Run(serverless bool) error {
 		return nil
 	}
 
-	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = "anrewwolf68@gmail.com"
-	certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
-	dir, _ := filepath.Split(os.Args[0])
-	apiTokenFilePath := filepath.Join(dir, "ssl/cloudflare_api_token.txt")
-	token, err := os.ReadFile(apiTokenFilePath)
-	if err != nil {
-		return err
-	}
-	certmagic.DefaultACME.DNS01Solver = &certmagic.DNS01Solver{
-		DNSManager: certmagic.DNSManager{
-			DNSProvider: &cloudflare.Provider{
-				APIToken: string(token),
-			},
-		},
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Cache:      autocert.DirCache("certs"),
+		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
 	}
 
-	return certmagic.HTTPS([]string{"snakeai.netvolk.online"}, MakeRouter())
+	server := &http.Server{
+		Addr:      ":443",
+		Handler:   MakeRouter(),
+		TLSConfig: certManager.TLSConfig(),
+	}
+
+	go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
+
+	//dir, _ := filepath.Split(os.Args[0])
+	//certFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
+	//keyFilePath := filepath.Join(dir, "internal/server/ssl/privkey.pem")
+	return server.ListenAndServeTLS("", "")
 }
