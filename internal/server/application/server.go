@@ -3,6 +3,14 @@ package application
 import (
 	"crypto/tls"
 	"database/sql"
+	"github.com/go-chi/chi/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/acme/autocert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"net/http"
+
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/delete_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/get_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/post_handlers"
@@ -16,13 +24,6 @@ import (
 	"github.com/andreamper220/snakeai/internal/server/infrastructure/storages"
 	"github.com/andreamper220/snakeai/pkg/logger"
 	pb "github.com/andreamper220/snakeai/proto"
-	"github.com/go-chi/chi/v5"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/acme/autocert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
 )
 
 func MakeRouter() *chi.Mux {
