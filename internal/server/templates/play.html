@@ -326,7 +326,7 @@
         width = 0, height = 0,
         inGame = false;
 
-    var socket = new WebSocket("ws://" + location.host + "/ws");
+    var socket = new WebSocket("wss://" + location.host + "/ws");
     socket.onmessage = function(event) {
         console.log(event.data);
         if (isJson(event.data)) {
