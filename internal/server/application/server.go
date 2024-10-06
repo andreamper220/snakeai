@@ -150,10 +150,8 @@ func Run(serverless bool) error {
 		},
 	}
 
-	go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
-
-	//dir, _ := filepath.Split(os.Args[0])
-	//certFilePath := filepath.Join(dir, "internal/server/ssl/fullchain.pem")
-	//keyFilePath := filepath.Join(dir, "internal/server/ssl/privkey.pem")
+	go func() {
+		logger.Log.Fatal(http.ListenAndServe(":80", certManager.HTTPHandler(nil)))
+	}()
 	return server.ListenAndServeTLS("", "")
 }
