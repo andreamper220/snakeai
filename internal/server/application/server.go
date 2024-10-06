@@ -1,6 +1,7 @@
 package application
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/delete_handlers"
 	"github.com/andreamper220/snakeai/internal/server/application/handlers/get_handlers"
@@ -142,9 +143,11 @@ func Run(serverless bool) error {
 	}
 
 	server := &http.Server{
-		Addr:      ":443",
-		Handler:   MakeRouter(),
-		TLSConfig: certManager.TLSConfig(),
+		Addr:    ":443",
+		Handler: MakeRouter(),
+		TLSConfig: &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		},
 	}
 
 	go http.ListenAndServe(":80", certManager.HTTPHandler(nil))

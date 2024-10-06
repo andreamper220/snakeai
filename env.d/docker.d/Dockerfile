@@ -15,7 +15,6 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/ssl/cloudflare_api_token.txt /app/ssl/cloudflare_api_token.txt
 COPY --from=builder /app/internal/server/templates /app/internal/server/templates
 COPY --from=builder /app/server /app/server
 
