@@ -7,8 +7,8 @@ services:
       target: server
     user: "root:root"
     ports:
-      - "8081:8081"
-      - "8443:8443"
+      - "80:80"
+      - "443:443"
     depends_on:
       snake_db:
         condition: service_healthy

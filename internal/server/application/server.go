@@ -144,7 +144,7 @@ func Run(serverless bool) error {
 	}
 
 	server := &http.Server{
-		Addr:    ":8443",
+		Addr:    ":443",
 		Handler: MakeRouter(),
 		TLSConfig: &tls.Config{
 			GetCertificate: certManager.GetCertificate,
@@ -152,7 +152,7 @@ func Run(serverless bool) error {
 	}
 
 	go func() {
-		logger.Log.Fatal(http.ListenAndServe(":8081", certManager.HTTPHandler(nil)))
+		logger.Log.Fatal(http.ListenAndServe(":80", certManager.HTTPHandler(nil)))
 	}()
 	return server.ListenAndServeTLS("", "")
 }
