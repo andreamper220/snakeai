@@ -7,8 +7,8 @@ services:
       target: server
     user: "root:root"
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:8081"
+      - "8443:8443"
     depends_on:
       snake_db:
         condition: service_healthy
@@ -27,7 +27,7 @@ services:
     container_name: snake-db
     env_file: docker.env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "pg_isready -d postgres -U postgres" ]
       interval: 5s
       timeout: 10s
       retries: 5

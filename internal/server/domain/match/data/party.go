@@ -40,14 +40,15 @@ func (parties *Parties) RemoveParty(pa *Party) {
 
 // Party represent a thread-safe object with ID, player, skill and game field properties.
 type Party struct {
-	mux      sync.Mutex
-	Id       string    `json:"id"`
-	Players  []*Player `json:"players"`
-	AvgSkill int       `json:"avg_skill"`
-	Size     int       `json:"size"`
-	Width    int       `json:"-"`
-	Height   int       `json:"-"`
-	MapId    string    `json:"map_id"`
+	mux           sync.Mutex
+	Id            string    `json:"id"`
+	Players       []*Player `json:"players"`
+	AvgSkill      int       `json:"avg_skill"`
+	Size          int       `json:"size"`
+	Width         int       `json:"-"`
+	Height        int       `json:"-"`
+	MapId         string    `json:"map_id"`
+	ToConnectById bool      `json:"-"`
 }
 
 // NewParty creates a new party with random ID, empty players and skill = 0.

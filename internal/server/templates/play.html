@@ -187,6 +187,7 @@
     <a class="active" href="#home">Home</a>
     <a href="#about">About</a>
     <a href="#contact">Contact</a>
+    <a href="https://github.com/andreamper220/snakeai/blob/main/README.md" target="_blank">Help</a>
     <div class="logout-container">
         <button id="logout_button" type="button">Logout</button>
     </div>
@@ -196,6 +197,7 @@
     <input type="checkbox" id="check">
     <div class="mm form">
         <header id="mm_form_header">Match Making</header>
+        <div id="party_info" style="text-align: center"></div><br>
         <div class="loader"></div>
         <div id="mm_form_container">
             <div id="mm_alert" class="alert"></div>
@@ -203,6 +205,8 @@
                 <input id="size" type="number" name="size" placeholder="Enter party size (1-10 players)" min="1" max="10" required>
                 <input id="width" type="number" name="width" placeholder="Enter field width (5-30 cells)" min="5" max="30" required>
                 <input id="height" type="number" name="height" placeholder="Enter field height (5-30 cells)" min="5" max="30" required>
+                <input id="to_use_by_id" type="checkbox" name="to_use_by_id" style="width: 30px; vertical-align: -22px;">
+                <label for="to_use_by_id">To connect ONLY by party ID</label>
                 <input id="editor_button" type="button" class="button" value="Create custom map">
                 <input id="mm_button" type="button" class="button" value="Create party">
             </form>
@@ -217,7 +221,10 @@
         <header id="conn_form_header">Connect to party</header>
         <div class="loader"></div>
         <div id="conn_form_container">
-            <input id="connect_button" type="button" class="button" value="Connect">
+            <form id="conn_form">
+                <input type="text" name="party_id" placeholder="Enter your Party ID (optional)">
+                <input id="connect_button" type="button" class="button" value="Connect">
+            </form>
             <div class="connect">
                 <span class="connect">
                     <label for="check">Create your own party</label>
@@ -362,17 +369,22 @@
                 context.fillStyle = "white";
                 context.fillRect(0, 0, canvas.width, canvas.height);
 
-                let p = 10;
+                let p = 20;
+                context.font = "15px arial";
+                context.fillStyle = "black";
                 for (let x = 0; x <= obj.width * boxSize; x += boxSize) {
                     context.moveTo(0.5 + x + p, p);
                     context.lineTo(0.5 + x + p, obj.height * boxSize + p);
+                    context.fillText((Math.floor(x / 40)).toString(), x + p - 20, obj.height * boxSize + p * 2);
                 }
 
                 for (let x = 0; x <= obj.height * boxSize; x += boxSize) {
                     context.moveTo(p, 0.5 + x + p);
                     context.lineTo(obj.width * boxSize + p, 0.5 + x + p);
+                    if (x < obj.height * boxSize) {
+                        context.fillText((obj.height - Math.floor(x / 40)).toString(), 1, x + p + 30);
+                    }
                 }
-                context.strokeStyle = "black";
                 context.stroke();
 
                 $('.box').css('background-color', 'white');
@@ -448,10 +460,10 @@
                 type : "POST",
                 contentType: "application/json; charset=utf-8",
                 data : getFormJsonData($("#mm_form")),
-                success : function() {
-                    // TODO change title to PARTY title (not CONNECT)
+                success : function(data) {
                     $('#mm_form_container').fadeOut();
                     $('.loader').show();
+                    $('#party_info').html("Your party ID = <b>" + data.id + "</b>");
                     $("#mm_alert").html("");
                 },
                 error: function(xhr) {
@@ -462,7 +474,9 @@
         $("#connect_button").on('click', function(){
             $.ajax({
                 url: '/player',
-                type : "POST"
+                type : "POST",
+                contentType: "application/json; charset=utf-8",
+                data : getFormJsonData($("#conn_form")),
             })
             $('#conn_form_container').fadeOut();
             $('.loader').show();

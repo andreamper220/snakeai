@@ -16,6 +16,7 @@ type Player struct {
 	Party      *Party    `json:"-"`
 	InParty    bool      `json:"-"`
 	InProcess  bool      `json:"-"`
+	PartyId    string    `json:"-"`
 }
 
 // NewPlayer creates a player with skill delta = 2.
@@ -36,13 +37,22 @@ func (player *Player) FindParty() (*Party, error) {
 
 	player.InProcess = true
 	parties := CurrentParties.GetParties()
-	goodParties := player.getGoodParties(parties)
-	return findBestParty(goodParties), nil
+	if player.PartyId != "" {
+		for _, party := range parties {
+			if player.PartyId == party.Id {
+				return party, nil
+			}
+		}
+	} else {
+		goodParties := player.getGoodParties(parties)
+		return findBestParty(goodParties), nil
+	}
+	return nil, errors.New("could not find party")
 }
 func (player *Player) getGoodParties(parties []*Party) []*Party {
 	var goodParties []*Party
 	for _, pa := range parties {
-		if isPartyGoodForPlayer(player, pa) {
+		if !pa.ToConnectById && isPartyGoodForPlayer(player, pa) {
 			goodParties = append(goodParties, pa)
 		}
 	}

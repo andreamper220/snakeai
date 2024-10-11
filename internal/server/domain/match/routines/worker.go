@@ -1,9 +1,9 @@
 package match_routines
 
 import (
-	"github.com/andreamper220/snakeai/internal/server/domain/match/data"
 	"time"
 
+	"github.com/andreamper220/snakeai/internal/server/domain/match/data"
 	"github.com/andreamper220/snakeai/pkg/logger"
 )
 
@@ -40,7 +40,11 @@ func MatchWorker() {
 
 		pa, err := p.FindParty()
 		if err != nil {
-			logger.Log.Infof("player with ID %s already searching for party", p.Id)
+			if p.PartyId != "" {
+				logger.Log.Info(err.Error())
+			} else {
+				logger.Log.Infof("player with ID %s already searching for party", p.Id)
+			}
 			continue
 		}
 		if pa != nil && p.Party != pa {

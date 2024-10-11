@@ -2,8 +2,9 @@ package storages
 
 import (
 	"errors"
-	"github.com/andreamper220/snakeai/internal/editor/domain"
 	"github.com/google/uuid"
+
+	"github.com/andreamper220/snakeai/internal/editor/domain"
 )
 
 var ErrMapNotFound = errors.New("map not found")

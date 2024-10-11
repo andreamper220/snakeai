@@ -4,7 +4,7 @@ import (
 	"github.com/andreamper220/snakeai/internal/server/domain/ws"
 	"github.com/andreamper220/snakeai/pkg/logger"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
+	"github.com/gorilla/websocket" // TODO replace ?
 	"net/http"
 )
 

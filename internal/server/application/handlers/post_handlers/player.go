@@ -66,6 +66,9 @@ func CreateOrJoinParty(w http.ResponseWriter, r *http.Request, userId uuid.UUID)
 	pa.Size = partyJson.Size
 	pa.Width = partyJson.Width
 	pa.Height = partyJson.Height
+	if partyJson.ToUseById != "" {
+		pa.ToConnectById = true
+	}
 	pa.MapId = mapID
 
 	p, err := storages.Storage.GetPlayerById(userId)
@@ -103,6 +106,13 @@ func JoinParty(w http.ResponseWriter, r *http.Request, userId uuid.UUID) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	var playerPartyJson matchjson.PlayerPartyJson
+	if err := json.NewDecoder(r.Body).Decode(&playerPartyJson); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	p.PartyId = playerPartyJson.PartyId
 
 	matchroutines.PlayerJobsChannel <- p
 }

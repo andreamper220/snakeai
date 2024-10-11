@@ -137,8 +137,9 @@
     <a href="#contact">Contact</a>
     <input id="width" type="number" placeholder="Width" min="5" max="30">
     <input id="height" type="number" placeholder="Height" min="5" max="30">
-    <input id="check_button" type="button" class="button" value="Check map" disabled>
     <input id="size" type="number" placeholder="Party size" min="1" max="10">
+    <input id="check_button" type="button" class="button" value="Check map" disabled>
+    <input id="to_use_by_id" type="checkbox" name="to_use_by_id" title="To connect ONLY by party ID" style="width: 30px;" disabled>
     <input id="mm_button" type="button" class="button" value="Create party" disabled>
     <div class="logout-container">
         <button id="logout_button" type="button">Logout</button>
@@ -256,13 +257,16 @@
                 $("#check_button").removeAttr('disabled');
                 if ($("#size").val() !== "") {
                     $("#mm_button").removeAttr('disabled');
+                    $("#to_use_by_id").removeAttr('disabled');
                 } else {
                     $("#mm_button").attr("disabled", "disabled");
+                    $("#to_use_by_id").attr("disabled", "disabled");
                 }
                 renderField($("#width").val(), $("#height").val());
             } else {
                 $("#check_button").attr("disabled", "disabled");
                 $("#mm_button").attr("disabled", "disabled");
+                $("#to_use_by_id").attr("disabled", "disabled");
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 obstacles = [];
             }
@@ -272,13 +276,16 @@
                 $("#check_button").removeAttr('disabled');
                 if ($("#size").val() !== "") {
                     $("#mm_button").removeAttr('disabled');
+                    $("#to_use_by_id").removeAttr('disabled');
                 } else {
                     $("#mm_button").attr("disabled", "disabled");
+                    $("#to_use_by_id").attr("disabled", "disabled");
                 }
                 renderField($("#width").val(), $("#height").val());
             } else {
                 $("#check_button").attr("disabled", "disabled");
                 $("#mm_button").attr("disabled", "disabled");
+                $("#to_use_by_id").attr("disabled", "disabled");
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 obstacles = [];
             }
@@ -286,8 +293,10 @@
         $("#size").on('input', function (){
             if ($("#size").val() !== "" && $("#height").val() !== "" && $("#width").val() !== "") {
                 $("#mm_button").removeAttr('disabled');
+                $("#to_use_by_id").removeAttr('disabled');
             } else {
                 $("#mm_button").attr("disabled", "disabled");
+                $("#to_use_by_id").attr("disabled", "disabled");
             }
         });
         $("#check_button").on('click', function(){
