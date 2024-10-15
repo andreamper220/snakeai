@@ -260,6 +260,11 @@
             <input id="end_button" type="button" class="button" value="END">
         </div>
         <div>
+            <input id="and_button" type="button" class="button" value="&& (AND)">
+            <input id="or_button" type="button" class="button" value="|| (OR)">
+            <input id="not_button" type="button" class="button" value="! (NOT)">
+        </div>
+        <div>
             <select id="obstacle_type">
                 <option value="edge" selected="selected">Edge</option>
                 <option value="snake">Snake</option>
@@ -486,7 +491,9 @@
             $("#cmd_list").val($("#cmd_list").val() + "if(");
         });
         $("#then_button").on('click', function(){
-            $("#cmd_list").val($("#cmd_list").val() + ")then{");
+            let cmdListVal = $("#cmd_list").val(),
+                bracketsNumberToInsert = (cmdListVal.split("(").length - 1) - (cmdListVal.split(")").length - 1);
+            $("#cmd_list").val($("#cmd_list").val() + ")".repeat(bracketsNumberToInsert) + "then{");
         });
         $("#elseif_button").on('click', function(){
             $("#cmd_list").val($("#cmd_list").val() + "}elseif(");
@@ -496,6 +503,15 @@
         });
         $("#end_button").on('click', function(){
             $("#cmd_list").val($("#cmd_list").val() + "}");
+        });
+        $("#and_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + ")&&(");
+        });
+        $("#or_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + ")||(");
+        });
+        $("#not_button").on('click', function(){
+            $("#cmd_list").val($("#cmd_list").val() + "!(");
         });
         $("#add_condition_button").on('click', function(){
             $("#cmd_list").val($("#cmd_list").val()

@@ -41,10 +41,11 @@ const (
 
 // AiCondition contains obstacle type, direction, condition and distance.
 type AiCondition struct {
-	ObstacleType      ObstacleType
-	ObstacleDirection ObstacleDirection
-	ObstacleCondition ObstacleCondition
-	ObstacleDistance  int
+	ObstacleType        ObstacleType
+	ObstacleDirection   ObstacleDirection
+	ObstacleCondition   ObstacleCondition
+	ObstacleDistance    int
+	IsNegativeCondition bool
 }
 
 func (condition AiCondition) Check(snake *Snake, game *Game) bool {
@@ -64,8 +65,14 @@ func (condition AiCondition) Check(snake *Snake, game *Game) bool {
 
 	for _, obstaclePoint := range obstaclePoints {
 		if check := condition.checkConditionDirection(direction, obstaclePoint, snake.Body[0]); check {
+			if condition.IsNegativeCondition {
+				return false
+			}
 			return true
 		}
+	}
+	if condition.IsNegativeCondition {
+		return true
 	}
 	return false
 }
@@ -148,9 +155,6 @@ func GenerateAiFunctions(ai string) ([]func(snake *Snake), error) {
 	}
 	if strings.Count(ai, "{") != strings.Count(ai, "}") {
 		return nil, errors.New("curly brackets count does not match")
-	}
-	if strings.Count(ai, ")then{") != strings.Count(ai, "(") {
-		return nil, errors.New("some conditions do not have actions")
 	}
 
 	return processAi(ai), nil
@@ -432,6 +436,11 @@ func processConditionString(ai string) (AiCondition, []func(snake *Snake), strin
 	condition := AiCondition{}
 	conditionString, index := getValueBetweenSymbols("(", ")", ai)
 	if conditionString != "" {
+		isNegativeCondition := false
+		if strings.Index(conditionString, "!") == 0 {
+			isNegativeCondition = true
+			conditionString = conditionString[2:]
+		}
 		conditionStrings := strings.Split(conditionString, `_`)
 		numberRegExp := regexp.MustCompile("[0-9]+")
 		numbers := numberRegExp.FindAllString(conditionStrings[1], 1)
@@ -443,10 +452,11 @@ func processConditionString(ai string) (AiCondition, []func(snake *Snake), strin
 			obstacleDistance, _ := strconv.Atoi(conditionStringsInner[1])
 
 			condition = AiCondition{
-				ObstacleType:      ObstacleType(conditionStrings[0]),
-				ObstacleDirection: ObstacleDirection(conditionStringsInner[0]),
-				ObstacleCondition: ObstacleCondition(conditionSeparator),
-				ObstacleDistance:  obstacleDistance,
+				ObstacleType:        ObstacleType(conditionStrings[0]),
+				ObstacleDirection:   ObstacleDirection(conditionStringsInner[0]),
+				ObstacleCondition:   ObstacleCondition(conditionSeparator),
+				ObstacleDistance:    obstacleDistance,
+				IsNegativeCondition: isNegativeCondition,
 			}
 		}
 		actions, aiNotProcessedString = processConditionActionsString(ai)
