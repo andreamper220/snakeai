@@ -465,7 +465,6 @@
             symbolsNotNewLine = ["&", "|"],
             symbolsSpace = [">", "<", "=", "!", "(", ")", "{", "}", "&", "|"];
         value += " ";
-        console.log(value);
         for (let i = 0; i < value.length - 1; i++) {
             if ((value[i] === "(" && !value[i+1].match(/[a-z]/i)) || value[i] === "{") {
                 tabsCount++;
@@ -586,13 +585,12 @@
             formatCmdList($("#cmd_list").val().replace((/ |\r\n|\n|\r|\t/gm),""));
         });
         $("#add_condition_button").on('click', function(){
-            console.log($("#obstacle_type").val());
-            $("#cmd_list").val($("#cmd_list").val()
-                + "(" +
-                + $("#obstacle_type").val() + "_" + $("#obstacle_direction").val()
-                + $("#obstacle_condition").val() + $("#obstacle_distance").val()
-                + ")"
-            );
+            let obstacle = $("#obstacle_type").val(),
+                direction = $("#obstacle_direction").val(),
+                cond = $("#obstacle_condition").val(),
+                dist = $("#obstacle_distance").val();
+            let condition = `(${obstacle}_${direction}${cond}${dist})`;
+            $("#cmd_list").val($("#cmd_list").val() + condition);
             formatCmdList($("#cmd_list").val().replace((/ |\r\n|\n|\r|\t/gm),""));
         });
         $("#right_button").on('click', function(){

@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"github.com/andreamper220/snakeai/pkg/logger"
 	"time"
 
 	grpcclients "github.com/andreamper220/snakeai/internal/server/infrastructure/grpc"
@@ -60,7 +59,6 @@ func (conditions AiConditions) Check(snake *Snake, game *Game) bool {
 		// if there are inner condition groups
 		for _, condition := range conditions.Conditions {
 			conditionsCheck := condition.Check(snake, game) && !condition.IsNegativeCondition
-			logger.Log.Info(conditionsCheck, conditions.Operator)
 			if len(conditions.Conditions) == 1 {
 				return conditionsCheck
 			}

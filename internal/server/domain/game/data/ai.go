@@ -2,7 +2,6 @@ package data
 
 import (
 	"errors"
-	"github.com/andreamper220/snakeai/pkg/logger"
 	"regexp"
 	"strconv"
 	"strings"
@@ -102,7 +101,6 @@ func processConditionString(ai string) (AiConditions, []func(snake *Snake), stri
 	if conditionString != "" {
 		conditionString, _ = getConditionStringFromString(conditionString)
 		condition, _, index = processConditionsString(conditionString)
-		logger.Log.Info(condition)
 		actions, aiNotProcessedString = processConditionActionsString(ai)
 
 		return condition, actions, aiNotProcessedString
@@ -127,7 +125,6 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 	aiConditions := AiConditions{}
 	condition := AiConditions{}
 
-	logger.Log.Info(conditionsString)
 	if strings.Index(conditionsString, "!") == 0 {
 		aiConditions.IsNegativeCondition = true
 		conditionsStringInner, _ = getConditionStringFromString(conditionsString)
@@ -141,7 +138,6 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 		conditionsStringInner, index = getConditionStringFromString(conditionsString)
 	}
 
-	logger.Log.Info(conditionsString, conditionsStringInner, index)
 	if strings.Index(conditionsStringInner, "&&") == index+1 {
 		aiConditions.Operator = And
 		index += 2
@@ -166,7 +162,6 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 		if conditionString == "" {
 			break
 		}
-		logger.Log.Info(conditionString)
 
 		conditionStrings := strings.Split(conditionString, `_`)
 		numberRegExp := regexp.MustCompile("[0-9]+")
@@ -194,11 +189,9 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 			aiConditions.Operator = Or
 			conditionsStringInner = conditionsStringInner[2:]
 		}
-		logger.Log.Info(conditionsStringInner)
 
 		aiConditions.Conditions = append(aiConditions.Conditions, aiCondition)
 	}
-	logger.Log.Info(aiConditions, operator)
 
 	return aiConditions, operator, index
 }
