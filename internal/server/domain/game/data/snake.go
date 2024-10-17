@@ -1,6 +1,7 @@
 package data
 
 import (
+	"github.com/andreamper220/snakeai/pkg/logger"
 	"golang.org/x/exp/rand"
 	"sync"
 	"time"
@@ -92,21 +93,23 @@ func (s *Snake) Right() {
 		}
 	}
 }
-func (s *Snake) DoIf(condition AiCondition, actionsLength int) {
+
+func (s *Snake) DoIf(conditions AiConditions, actionsLength int) {
 	// if condition true - to run next action (by default)
 	// else - rewind to end of condition actions
 	s.AiFuncNumPrev = s.AiFuncNum
-	if !condition.Check(s, s.GetGame()) {
+	logger.Log.Info(conditions.Check(s, s.GetGame()), actionsLength)
+	if !conditions.Check(s, s.GetGame()) {
 		s.AiFuncNum += actionsLength
 	}
 }
-func (s *Snake) DoElseIf(condition AiCondition, actionsLength int) {
+func (s *Snake) DoElseIf(conditions AiConditions, actionsLength int) {
 	// if only from previous if / elseif
 	if s.AiFuncNum-s.AiFuncNumPrev <= 1 {
 		s.AiFuncNumPrev += actionsLength + 1
 		s.AiFuncNum += actionsLength
 	} else {
-		s.DoIf(condition, actionsLength)
+		s.DoIf(conditions, actionsLength)
 	}
 }
 func (s *Snake) DoElse(actionsLength int) {
