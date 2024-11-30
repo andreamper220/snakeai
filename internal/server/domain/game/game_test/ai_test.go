@@ -162,11 +162,13 @@ func (s *GameTestSuite) TestSnakeIfEdge() {
 		for _, ttt := range tt.subtests {
 			for _, cond := range conditions {
 				s.Run(tt.name+"_"+ttt.name+"_"+string(cond.condition), func() {
-					cond := data.AiCondition{
-						ObstacleType:      data.ObstacleEdge,
-						ObstacleDirection: data.ObstacleDirection(tt.name),
-						ObstacleCondition: cond.condition,
-						ObstacleDistance:  cond.distance,
+					cond := data.AiConditions{
+						Condition: data.AiCondition{
+							ObstacleType:      data.ObstacleEdge,
+							ObstacleDirection: data.ObstacleDirection(tt.name),
+							ObstacleCondition: cond.condition,
+							ObstacleDistance:  cond.distance,
+						},
 					}
 					sn := data.NewSnake(ttt.initX, ttt.initY, ttt.xTo, ttt.yTo, []func(snake *data.Snake){
 						func(snake *data.Snake) { snake.DoIf(cond, 1) },
@@ -319,11 +321,13 @@ func (s *GameTestSuite) TestSnakeIfFood() {
 		for _, ttt := range tt.subtests {
 			for _, cond := range conditions {
 				s.Run(tt.name+"_"+ttt.name+"_"+string(cond.condition), func() {
-					cond := data.AiCondition{
-						ObstacleType:      data.ObstacleFood,
-						ObstacleDirection: data.ObstacleDirection(tt.name),
-						ObstacleCondition: cond.condition,
-						ObstacleDistance:  cond.distance,
+					cond := data.AiConditions{
+						Condition: data.AiCondition{
+							ObstacleType:      data.ObstacleFood,
+							ObstacleDirection: data.ObstacleDirection(tt.name),
+							ObstacleCondition: cond.condition,
+							ObstacleDistance:  cond.distance,
+						},
 					}
 					sn := data.NewSnake(ttt.initX, ttt.initY, ttt.xTo, ttt.yTo, []func(snake *data.Snake){
 						func(snake *data.Snake) { snake.DoIf(cond, 1) },
@@ -477,11 +481,13 @@ func (s *GameTestSuite) TestSnakeIfSnake() {
 		for _, ttt := range tt.subtests {
 			for _, cond := range conditions {
 				s.Run(tt.name+"_"+ttt.name+"_"+string(cond.condition), func() {
-					cond := data.AiCondition{
-						ObstacleType:      data.ObstacleSnake,
-						ObstacleDirection: data.ObstacleDirection(tt.name),
-						ObstacleCondition: cond.condition,
-						ObstacleDistance:  cond.distance,
+					cond := data.AiConditions{
+						Condition: data.AiCondition{
+							ObstacleType:      data.ObstacleSnake,
+							ObstacleDirection: data.ObstacleDirection(tt.name),
+							ObstacleCondition: cond.condition,
+							ObstacleDistance:  cond.distance,
+						},
 					}
 					sn1 := data.NewSnake(ttt.initX, ttt.initY, ttt.xTo, ttt.yTo, []func(snake *data.Snake){
 						func(snake *data.Snake) { snake.DoIf(cond, 1) },
@@ -511,17 +517,21 @@ func (s *GameTestSuite) TestSnakeElseIf() {
 	g := data.NewGame(gameWidth, gameHeight, &pa)
 	s.games.AddGame(g)
 
-	condIf := data.AiCondition{
-		ObstacleType:      data.ObstacleEdge,
-		ObstacleDirection: data.Right,
-		ObstacleCondition: data.Equal,
-		ObstacleDistance:  0,
+	condIf := data.AiConditions{
+		Condition: data.AiCondition{
+			ObstacleType:      data.ObstacleEdge,
+			ObstacleDirection: data.Right,
+			ObstacleCondition: data.Equal,
+			ObstacleDistance:  0,
+		},
 	}
-	condElseIf := data.AiCondition{
-		ObstacleType:      data.ObstacleEdge,
-		ObstacleDirection: data.Right,
-		ObstacleCondition: data.Equal,
-		ObstacleDistance:  1,
+	condElseIf := data.AiConditions{
+		Condition: data.AiCondition{
+			ObstacleType:      data.ObstacleEdge,
+			ObstacleDirection: data.Right,
+			ObstacleCondition: data.Equal,
+			ObstacleDistance:  1,
+		},
 	}
 
 	s.Run("if", func() {
@@ -582,17 +592,21 @@ func (s *GameTestSuite) TestSnakeElse() {
 	g := data.NewGame(gameWidth, gameHeight, &pa)
 	s.games.AddGame(g)
 
-	condIf := data.AiCondition{
-		ObstacleType:      data.ObstacleEdge,
-		ObstacleDirection: data.Right,
-		ObstacleCondition: data.Equal,
-		ObstacleDistance:  0,
+	condIf := data.AiConditions{
+		Condition: data.AiCondition{
+			ObstacleType:      data.ObstacleEdge,
+			ObstacleDirection: data.Right,
+			ObstacleCondition: data.Equal,
+			ObstacleDistance:  0,
+		},
 	}
-	condElseIf := data.AiCondition{
-		ObstacleType:      data.ObstacleEdge,
-		ObstacleDirection: data.Right,
-		ObstacleCondition: data.Equal,
-		ObstacleDistance:  1,
+	condElseIf := data.AiConditions{
+		Condition: data.AiCondition{
+			ObstacleType:      data.ObstacleEdge,
+			ObstacleDirection: data.Right,
+			ObstacleCondition: data.Equal,
+			ObstacleDistance:  1,
+		},
 	}
 
 	s.Run("if", func() {
