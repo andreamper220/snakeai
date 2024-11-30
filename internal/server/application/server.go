@@ -3,6 +3,7 @@ package application
 import (
 	"crypto/tls"
 	"database/sql"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/redis/go-redis/v9"
@@ -137,12 +138,24 @@ func Run(serverless bool) error {
 		return nil
 	}
 
+	var serverEndChan = make(chan error)
+	startServer(serverEndChan)
+	for {
+		select {
+		case doneErr := <-serverEndChan:
+			fmt.Println("Fatal server error:", doneErr.Error())
+			startServer(serverEndChan)
+		default:
+		}
+	}
+}
+
+func startServer(serverEndChan chan error) {
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		Cache:      autocert.DirCache("certs"),
 		HostPolicy: autocert.HostWhitelist("snakeai.netvolk.online"),
 	}
-
 	server := &http.Server{
 		Addr:    ":443",
 		Handler: MakeRouter(),
@@ -154,5 +167,8 @@ func Run(serverless bool) error {
 	go func() {
 		logger.Log.Fatal(http.ListenAndServe(":80", certManager.HTTPHandler(nil)))
 	}()
-	return server.ListenAndServeTLS("", "")
+	go func(serverEndChan chan error) {
+		err := server.ListenAndServeTLS("", "")
+		serverEndChan <- err
+	}(serverEndChan)
 }
