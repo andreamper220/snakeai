@@ -127,9 +127,10 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 		aiConditions.IsNegativeCondition = true
 		conditionsStringInner, _ = getConditionStringFromString(conditionsString)
 		if conditionsString[4] == '!' || conditionsString[4] == '(' || conditionsString[1] == '(' {
-			condition := AiConditions{}
-			condition, operator, index = processConditionsString(conditionsStringInner)
+			condition, oper, ind := processConditionsString(conditionsStringInner)
 			aiConditions.Conditions = append(aiConditions.Conditions, condition)
+			operator = oper
+			index = ind
 		} else {
 			conditionsStringInner, index = getConditionStringFromString(conditionsString)
 		}
