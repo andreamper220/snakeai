@@ -140,14 +140,12 @@ func Run(serverless bool) error {
 
 	var serverEndChan = make(chan error)
 	startServer(serverEndChan)
-	for {
-		select {
-		case doneErr := <-serverEndChan:
-			fmt.Println("Fatal server error:", doneErr.Error())
-			startServer(serverEndChan)
-		default:
-		}
+	for doneErr := range serverEndChan {
+		fmt.Println("Fatal server error:", doneErr.Error())
+		startServer(serverEndChan)
 	}
+
+	return nil
 }
 
 func startServer(serverEndChan chan error) {

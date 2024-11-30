@@ -95,18 +95,17 @@ func processConditions(ai string) []func(snake *Snake) {
 func processConditionString(ai string) (AiConditions, []func(snake *Snake), string) {
 	aiNotProcessedString := ""
 	actions := make([]func(snake *Snake), 0)
-	condition := AiConditions{}
 
 	conditionString, index := getValueBetweenSymbols("if", "then", ai)
 	if conditionString != "" {
 		conditionString, _ = getConditionStringFromString(conditionString)
-		condition, _, index = processConditionsString(conditionString)
+		condition, _, _ := processConditionsString(conditionString)
 		actions, aiNotProcessedString = processConditionActionsString(ai)
 
 		return condition, actions, aiNotProcessedString
 	}
 
-	return condition, actions, ai[index+1:]
+	return AiConditions{}, actions, ai[index+1:]
 }
 
 func processConditionActionsString(ai string) ([]func(snake *Snake), string) {
@@ -123,12 +122,12 @@ func processConditionsString(conditionsString string) (AiConditions, ConditionOp
 	operator := Default
 	conditionsStringInner := ""
 	aiConditions := AiConditions{}
-	condition := AiConditions{}
 
 	if strings.Index(conditionsString, "!") == 0 {
 		aiConditions.IsNegativeCondition = true
 		conditionsStringInner, _ = getConditionStringFromString(conditionsString)
 		if conditionsString[4] == '!' || conditionsString[4] == '(' || conditionsString[1] == '(' {
+			condition := AiConditions{}
 			condition, operator, index = processConditionsString(conditionsStringInner)
 			aiConditions.Conditions = append(aiConditions.Conditions, condition)
 		} else {
