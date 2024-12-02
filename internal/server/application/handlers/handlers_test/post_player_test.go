@@ -337,10 +337,13 @@ func (s *HandlerTestSuite) TestPlayerEnqueue() {
 					}(ws2)
 				}
 
+				u := matchjson.PlayerPartyJson{}
+				body, err := json.Marshal(u)
+				s.Require().NoError(err)
 				req, err := http.NewRequest(
 					tt.got.method,
 					fmt.Sprintf("%s/player", s.Server.URL),
-					nil,
+					bytes.NewBuffer(body),
 				)
 				s.Require().NoError(err)
 				req.AddCookie(sessionCookie2)
@@ -407,10 +410,13 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 					return
 				}
 			}(ws2)
+			u := matchjson.PlayerPartyJson{}
+			body, err := json.Marshal(u)
+			s.Require().NoError(err)
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/player", s.Server.URL),
-				nil,
+				bytes.NewBuffer(body),
 			)
 			s.Require().NoError(err)
 			req.AddCookie(sessionCookie2)
@@ -440,7 +446,7 @@ func (s *HandlerTestSuite) TestPlayerDelayedEnqueue() {
 				Width:  20,
 				Height: 20,
 			}
-			body, err := json.Marshal(pa)
+			body, err = json.Marshal(pa)
 			s.Require().NoError(err)
 			req, err = http.NewRequest(
 				http.MethodPost,
